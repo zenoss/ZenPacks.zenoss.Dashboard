@@ -1,0 +1,27 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser = "http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    >
+  <include package=".browser"/>
+
+  <adapter provides=".info.IDashboardInfo"
+           for="ZenPacks.zenoss.Dashboard.Dashboard.Dashboard"
+           factory=".info.DashboardInfo"
+           />
+
+  <adapter factory=".facades.DashboardFacade"
+           provides=".facades.IDashboardFacade"
+           name="dashboard"
+           for="*"
+           />
+
+  <browser:directRouter
+        name="dashboard_router"
+        for="*"
+        class=".routers.DashboardRouter"
+        namespace="Zenoss.remote"
+        permission="zenoss.View"
+        />
+</configure>

@@ -1,0 +1,34 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser = "http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    >
+
+    <!-- API: Info Adapters -->
+    
+    <!-- Browser Resources -->
+    <browser:resourceDirectory
+        name="dashboard"
+        directory="resources"
+        />
+
+	<browser:page
+		template="templates/dashboard.pt"
+		name="newDashboard"
+		for="Products.ZenModel.interfaces.IDataRoot"
+		permission="zenoss.View"
+		/>
+
+	<browser:viewlet
+		name="New Dashboard"
+		url="/zport/dmd/newDashboard"
+		weight="2"
+		parentItem="Dashboard"
+		manager="Products.ZenUI3.navigation.interfaces.ISecondaryNavigationMenu"
+		class="Products.ZenUI3.navigation.menuitem.SecondaryNavigationMenuItem"
+		permission="zenoss.View"
+		layer="Products.ZenUI3.navigation.interfaces.IZenossNav"
+		/>
+	
+</configure>

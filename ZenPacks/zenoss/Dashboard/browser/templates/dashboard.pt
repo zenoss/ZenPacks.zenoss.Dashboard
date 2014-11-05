@@ -1,0 +1,18 @@
+
+<tal:block metal:use-macro="context/page_macros/base-new">
+
+<tal:block metal:fill-slot="title">Dashboard Demo</tal:block>
+
+<tal:block metal:fill-slot="center_panel_content">
+
+</tal:block>
+
+<tal:block metal:fill-slot="script_layout">
+<link rel="stylesheet" type="text/css" href="++resource++dashboard/css/portal.css">
+<script
+    tal:attributes="src python: context.zport.getVersionedResourcePath('/++resource++dashboard/js/app.js')"
+>
+</script>
+
+</tal:block>
+</tal:block>
