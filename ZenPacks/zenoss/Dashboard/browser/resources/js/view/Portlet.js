@@ -18,7 +18,10 @@ Ext.define('Zenoss.Dashboard.view.Portlet', {
         moveOnDrag: false
     },
     cls: 'x-portlet',
-
+    tools: [{
+        xtype: 'tool',
+        type: 'gear'
+    }],
     // Override Panel's default doClose to provide a custom fade out effect
     // when a portlet is removed from the portal
     doClose: function() {

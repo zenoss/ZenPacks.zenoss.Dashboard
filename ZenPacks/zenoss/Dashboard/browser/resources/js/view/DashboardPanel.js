@@ -123,6 +123,91 @@
         }
     });
 
+
+    Ext.define('Zenoss.Dashboard.view.EditPortletDialog', {
+        extend: 'Zenoss.dialog.BaseWindow',
+        alias: ['widget.editportletdialog'],
+        constructor: function(config) {
+            config = config || {};
+            if (!config.portlet) {
+                throw "EditPortletDialog received no portlet";
+            }
+            var portlet = config.portlet,
+                me = this, portletConfig = portlet.initialConfig;
+            Ext.applyIf(config, {
+                height: 600,
+                width: 800,
+                cls: 'white-background-panel',
+                title: _t('Edit Portlet'),
+                bodyPadding: 10,
+                layout: 'hbox',
+                items:[{
+                    xtype: 'form',
+                    flex: .4,
+                    height: 575,
+                    width: 750,
+                    layout: 'anchor',
+                    listeners: {
+                        validitychange: function(form, isValid) {
+                            me.query('button')[0].setDisabled(!isValid);
+                        },
+                        scope: this
+                    },
+                    defaults: {
+                        anchor: "90%",
+                        labelAlign: 'top',
+                        listeners: {
+                            change: this.updatePreviewTask,
+                            scope: this
+                        }
+                    },
+                    items: [{
+                        xtype: 'container',
+                        html: Ext.String.format("<h1>{0}</h1>", _t('Configuration'))
+                    }].concat(portlet.getConfigFields())
+                },{
+                    xtype: 'panel',
+                    flex: .6,
+                    height: 575,
+                    itemId: 'preview',
+                    items: [{
+                        xtype: 'container',
+                        html: Ext.String.format("<h1>{0}</h1>", _t('Preview'))
+                    }, portletConfig]
+                }],
+                buttons: [{
+                    xtype: 'button',
+                    ref: 'submitButton',
+                    ui: 'dialog-dark',
+                    text: _t('Add'),
+                    disabled: true
+                }, {
+                    xtype: 'button',
+                    ui: 'dialog-dark',
+                    text: _t('Close'),
+                    handler: Ext.bind(function(){
+                        this.close();
+                    }, this)
+                }]
+            });
+            this.callParent([config]);
+        },
+        getFormValues: function() {
+            return this.down('form').getForm().getFieldValues();
+        },
+        updatePreviewTask: function() {
+            if (!this.updateTask) {
+                this.updateTask = new Ext.util.DelayedTask(Ext.bind(this.updatePreview, this));
+            }
+            this.updateTask.delay(250);
+        },
+        updatePreview: function() {
+            var portlet = this.down('portlet'),
+                values = this.down('form').getForm().getFieldValues();
+            portlet.applyConfig(values);
+        }
+    });
+
     Ext.define('Zenoss.Dashboard.view.AddDashboardDialog', {
         extend: 'Zenoss.FormDialog',
         constructor: function(config) {

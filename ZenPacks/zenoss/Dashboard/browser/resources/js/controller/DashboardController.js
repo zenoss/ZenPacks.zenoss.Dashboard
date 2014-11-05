@@ -56,6 +56,9 @@
                     close: this.saveDashboardState,
                     resize: this.saveDashboardState
                 },
+                'portlet tool[type="gear"]': {
+                    click: this.showEditPortletDialog
+                },
                 'combo[itemId="currentDashboard"]': {
                     select: this.renderCurrentDashboard
                 },
@@ -63,6 +66,21 @@
                     drop:  this.saveDashboardState
                 }
             });
+        },
+        showEditPortletDialog: function(tool){
+            var portlet = tool.up('portlet');
+            var win = Ext.create('Zenoss.Dashboard.view.EditPortletDialog', {
+                portlet: portlet
+            });
+
+            // save handler for the dialog
+            win.query('button')[0].on('click', function() {
+                var updatedConfig = win.getFormValues();
+                portlet.applyConfig(updatedConfig);
+                this.saveDashboardState();
+                win.close();
+            }, this, {single: true});
+            win.show();
         },
         showAddPortletDialog: function(){
             var win = Ext.create('Zenoss.Dashboard.view.AddPortletDialog', {
@@ -182,7 +200,6 @@
         addPortlet: function(portletConfig) {
             // TODO: find the column that is the smallest
             // add the portlet to it
-            console.log(portletConfig);
             var columns = this.getDashboardPanel().query('portalcolumn');
             columns[0].add(portletConfig);
         },

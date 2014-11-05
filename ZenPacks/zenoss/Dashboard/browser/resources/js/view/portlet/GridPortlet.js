@@ -35,10 +35,13 @@ Ext.define('Zenoss.Dashboard.view.portlet.GridPortlet', {
         var store = Ext.create('Zenoss.Dashboard.store.Stocks');
 
         Ext.apply(this, {
+            layout: 'fit',
             items: [{
                 height: this.height,
                 xtype: 'grid',
                 store: store,
+                height: 300,
+                layout: 'fit',
                 stripeRows: true,
                 columnLines: true,
                 columns: [{
