@@ -106,3 +106,7 @@ class DashboardFacade(ZuulFacade):
             group = self._dmd.ZenUsers.getGroupSettings(name)
             results.append(dict(uid=group.getPrimaryId(), name=group.id))
         return results
+
+    def getSubOrganizers(self, uid):
+        org = self._getObject(uid)
+        return [IInfo(org)] +  [IInfo(org) for org in org.getSubOrganizers()]

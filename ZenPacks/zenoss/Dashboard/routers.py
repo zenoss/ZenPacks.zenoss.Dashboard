@@ -44,3 +44,8 @@ class DashboardRouter(DirectRouter):
         facade = self._getFacade()
         result = facade.getCurrentUsersGroups()
         return DirectResponse.succeed(data=Zuul.marshal(result))
+
+    def getSubOrganizers(self, uid):
+        facade = self._getFacade()
+        result = facade.getSubOrganizers(uid)
+        return DirectResponse.succeed(data=Zuul.marshal(result))

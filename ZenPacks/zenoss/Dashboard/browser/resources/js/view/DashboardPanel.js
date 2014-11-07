@@ -179,7 +179,7 @@
                     xtype: 'button',
                     ref: 'submitButton',
                     ui: 'dialog-dark',
-                    text: _t('Add'),
+                    text: _t('Save'),
                     disabled: true
                 }, {
                     xtype: 'button',

@@ -14,9 +14,7 @@
      * @extends Ext.app.Controller
      */
     Ext.define('Zenoss.Dashboard.controller.DashboardController', {
-        stores: ['Stocks', 'ChartStocks'],
-
-        models: ['Stock', 'ChartStock', 'Dashboard'],
+        models: ['Dashboard'],
         refs: [{
             selector: 'combo[itemId="currentDashboard"]',
             ref: "dashboardSelecter"
@@ -28,12 +26,7 @@
             "PortalPanel",
             "DashboardPanel",
             "PortalDropZone",
-            "PortalSettings",
-            "DashboardContext",
-            "portlet.ChartPortlet",
-            "portlet.GridPortlet",
-            "portlet.TestPortlet",
-            "portlet.HTMLPortlet"
+            "DashboardContext"
         ],
 
         extend: 'Ext.app.Controller',
