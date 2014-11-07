@@ -49,3 +49,13 @@ class DashboardRouter(DirectRouter):
         facade = self._getFacade()
         result = facade.getSubOrganizers(uid)
         return DirectResponse.succeed(data=Zuul.marshal(result))
+
+    def getDeviceIssues(self, keys=None):
+        facade = self._getFacade()
+        result = facade.getDeviceIssues()
+        return DirectResponse.succeed(data=Zuul.marshal(result, keys=keys))
+
+    def getDaemonProcessesDown(self):
+        facade = self._getFacade()
+        result = facade.getDaemonProcessesDown()
+        return DirectResponse.succeed(data=Zuul.marshal(result))

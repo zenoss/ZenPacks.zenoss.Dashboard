@@ -79,6 +79,11 @@
 
             return fields.concat(this.getCustomConfigFields());
         },
+        /**
+         * Template method that is called when displaying the configuration fields
+         * for this portlet.
+         * It is expected that the subclasses will return an array of objects
+         **/
         getCustomConfigFields: function() {
             return [];
         },
@@ -92,6 +97,7 @@
             if (config.title) {
                 this.setTitle(config.title);
             }
+            // by default apply all the config properties to this object
             Ext.apply(this, config);
         }
     });
@@ -266,6 +272,251 @@
                 name: 'siteUrl',
                 fieldLabel: _t('Site URL'),
                 value: this.siteUrl
+            }];
+            return fields;
+        }
+    });
+
+
+
+    /**
+     * @class Zenoss.Dashboard.model.DeviceIssueModel
+     * @extends Ext.data.Model
+     * Field definitions for the device issues grid
+     **/
+    Ext.define('Zenoss.Dashboard.model.DeviceIssueModel',  {
+        extend: 'Ext.data.Model',
+        idProperty: 'uid',
+        fields: [
+            {name: 'uid'},
+            {name: 'name'},
+            {name: 'events'},
+            {name: 'icon'},
+        ]
+    });
+
+    /**
+     * @class Zenoss.Dashboard.stores.DeviceIssues
+     * @extend Zenoss.DirectStore
+     * Direct store for loading organizers
+     */
+    Ext.define("Zenoss.Dashboard.stores.DeviceIssues", {
+        extend: "Zenoss.NonPaginatedStore",
+        constructor: function(config) {
+            config = config || {};
+            Ext.applyIf(config, {
+                model: 'Zenoss.Dashboard.model.DeviceIssueModel',
+                initialSortColumn: "name",
+                directFn: Zenoss.remote.DashboardRouter.getDeviceIssues,
+                root: 'data'
+            });
+            this.callParent(arguments);
+        }
+    });
+
+    /**
+     * Device Issues Portlet. Shows devices that have events
+     * @extends Zenoss.Dashboard.view.Portlet
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.DeviceIssues', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.deviceissuesportlet',
+        height: 400,
+        initComponent: function(){
+            var store = Ext.create('Zenoss.Dashboard.stores.DeviceIssues', {});
+            store.load({
+                params: {
+                    keys: Ext.pluck(Zenoss.Dashboard.model.DeviceIssueModel.prototype.fields.items, 'name')
+                }
+            });
+
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'grid',
+                    emptyText: _t('No records found.'),
+                    store: store,
+                    columns: [{
+                        dataIndex:'icon',
+                        header: _t('Icon'),
+                        width: 40,
+                        renderer: function(value) {
+                            return Ext.String.format("<image height=\"32\"src='{0}' />", value);
+                        }
+                    },{
+                        dataIndex: 'name',
+                        header: _t('Device'),
+                        flex: 1,
+                        hideable: false,
+                        renderer: function(name, row, record) {
+                            return Zenoss.render.Device(record.data.uid, name);
+                        }
+                    },{
+                        width: 75,
+                        dataIndex: 'events',
+                        header: _t('Events'),
+                        sortable: false,
+                        renderer: function(ev, ignored, record) {
+                            var table = Zenoss.render.worstevents(ev),
+                            url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
+                            if (table){
+                                table = table.replace('table', 'table onclick="location.href=\''+url+'\';"');
+                            }
+                            return table;
+                        }
+                    }]
+                }]
+            });
+            this.callParent(arguments);
+        }
+    });
+
+
+    /**
+     * @class Zenoss.Dashboard.model.DaemonProcessDown
+     * @extends Ext.data.Model
+     * Field definitions for the Daemon Process Down Grid
+     **/
+    Ext.define('Zenoss.Dashboard.model.DaemonProcessDown',  {
+        extend: 'Ext.data.Model',
+        idProperty: 'process',
+        fields: [
+            {name: 'host'},
+            {name: 'process'},
+            {name: 'secondsDown'}
+        ]
+    });
+
+    /**
+     * @class Zenoss.Dashboard.stores.DaemonProcessDown
+     * @extend Zenoss.DirectStore
+     */
+    Ext.define("Zenoss.Dashboard.stores.DaemonProcessDownStore", {
+        extend: "Zenoss.NonPaginatedStore",
+        constructor: function(config) {
+            config = config || {};
+            Ext.applyIf(config, {
+                model: 'Zenoss.Dashboard.model.DaemonProcessDown',
+                initialSortColumn: "process",
+                autoLoad: true,
+                directFn: Zenoss.remote.DashboardRouter.getDaemonProcessesDown,
+                root: 'data'
+            });
+            this.callParent(arguments);
+        }
+    });
+
+    /**
+     * Daemon Processes Down Portlet. Shows daemons that are down by the heart beat
+     * @extends Zenoss.Dashboard.view.Portlet
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.DaemonProcessDown', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.daemonprocessportlet',
+        height: 250,
+        initComponent: function(){
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'grid',
+                    emptyText: _t('No records found.'),
+                    store: Ext.create('Zenoss.Dashboard.stores.DaemonProcessDownStore', {}),
+                    columns: [{
+                        dataIndex:'host',
+                        header: _t('Host'),
+                        width: 120
+                    },{
+                        dataIndex: 'process',
+                        header: _t('Daemon Process'),
+                        flex: 1,
+                        hideable: false
+                    },{
+                        width: 120,
+                        dataIndex: 'secondsDown',
+                        header: _t('Seconds Down'),
+                        align: 'right',
+                        sortable: false
+                    },{
+                        dataIndex: 'monitor',
+                        header: _t('Monitor'),
+                        with: 120,
+                        hideable: false
+                    }]
+                }]
+            });
+            this.callParent(arguments);
+        }
+    });
+
+    /**
+     * Daemon Processes Down Portlet. Shows daemons that are down by the heart beat
+     * @extends Zenoss.Dashboard.view.Portlet
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.ProductionState', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.productionstateportlet',
+        height: 250,
+        productionStates: [300],
+        initComponent: function(){
+            Zenoss.env.initProductionStates();
+            var store = Ext.create('Zenoss.DeviceStore', {});
+            store.setBaseParam('uid', '/zport/dmd/Devices');
+            store.setBaseParam('keys', ['uid', 'name', 'productionState']);
+            store.setParamsParam('productionState', this.productionStates);
+            store.load();
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'grid',
+                    emptyText: _t('No records found.'),
+                    store: store,
+                    columns: [{
+                        dataIndex: 'name',
+                        header: _t('Device'),
+                        flex: 1,
+                        hideable: false,
+                        renderer: function(name, row, record) {
+                            return Zenoss.render.Device(record.data.uid, name);
+                        }
+                    },{
+                        dataIndex: 'productionState',
+                        header: _t('Production State'),
+                        hideable: false,
+                        renderer: function(value) {
+                            return Zenoss.env.PRODUCTION_STATES_MAP[value];
+                        }
+                    }]
+                }]
+            });
+            this.callParent(arguments);
+        },
+        getConfig: function() {
+            return {
+                productionStates: this.productionStates
+            }
+        },
+        applyConfig: function(config) {
+            if (this.rendered) {
+                var grid = this.down('grid');
+                grid.getStore().setParamsParam('productionState', config.productionStates);
+                grid.getStore().load();
+            }
+            this.callParent([config]);
+        },
+        getCustomConfigFields: function() {
+            var me = this;
+            var fields = [{
+                xtype: 'ProductionStateCombo',
+                fieldLabel: _t('Production State'),
+                name: 'productionStates',
+                // bug with multi select combo where we have to update the
+                // value after we have rendered otherwise it wont take effect
+                value: me.productionStates,
+                listeners: {
+                    afterrender: function(combo) {
+                        combo.setValue(me.productionStates);
+                    }
+                },
+                multiSelect: true,
+                height: 100,
+                width: 200
             }];
             return fields;
         }

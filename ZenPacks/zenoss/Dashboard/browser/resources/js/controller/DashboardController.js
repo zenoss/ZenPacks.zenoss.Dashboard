@@ -176,6 +176,15 @@
             var dashboard = this.getCurrentDashboard(),
                 state = this.getCurrentDashboardState();
             dashboard.set('state', state);
+            if (!this.saveTask) {
+                this.saveTask = new Ext.util.DelayedTask(Ext.bind(this._updateDashboardServerState, this));
+            }
+            this.saveTask.delay(250);
+        },
+        _updateDashboardServerState: function() {
+            var dashboard = this.getCurrentDashboard(),
+                state = this.getCurrentDashboardState();
+            state = this.getCurrentDashboardState();
             Zenoss.remote.DashboardRouter.saveDashboardState({
                 uid: dashboard.get('uid'),
                 state: state

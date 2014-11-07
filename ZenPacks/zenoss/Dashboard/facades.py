@@ -8,9 +8,15 @@
 ##############################################################################
 from Acquisition import aq_base
 from zope.interface import implements
+from zenoss.protocols.services import ServiceException
 from Products.Zuul.interfaces import IFacade, IInfo
+from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
+from Products.Zuul import getFacade
+from Products.ZenModel.Device import Device
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
+from Products.ZenModel.ZenossSecurity import ZEN_VIEW
+from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
 
 class IDashboardFacade(IFacade):
     """
@@ -110,3 +116,27 @@ class DashboardFacade(ZuulFacade):
     def getSubOrganizers(self, uid):
         org = self._getObject(uid)
         return [IInfo(org)] +  [IInfo(org) for org in org.getSubOrganizers()]
+
+    def getDeviceIssues(self):
+        zep = getFacade('zep', self._dmd)
+        manager = IGUIDManager(self._dmd)
+        deviceSeverities = zep.getDeviceIssuesDict()
+        zem = self.context.dmd.ZenEventManager
+        devdata = []
+        # only get the first 100 since this is just the portlet
+        for uuid in deviceSeverities.keys()[:100]:
+            dev = manager.getObject(uuid)
+            if dev and isinstance(dev, Device):
+                if (not zem.checkRemotePerm(ZEN_VIEW, dev)
+                    or dev.productionState < zem.prodStateDashboardThresh
+                    or dev.priority < zem.priorityDashboardThresh):
+                    continue
+                severities = deviceSeverities[uuid]
+                info = IInfo(dev)
+                info.setEventSeverities(severities)
+                devdata.append(info)
+        return devdata
+
+    def getDaemonProcessesDown(self):
+        return getHeartbeatObjects(deviceRoot=self._dmd.Devices,
+                                   keys=['host', 'process', 'secondsDown', 'monitor'])
