@@ -67,7 +67,7 @@
             });
 
             // save handler for the dialog
-            win.query('button')[0].on('click', function() {
+            win.query('button[ref="submitButton"]')[0].on('click', function() {
                 var updatedConfig = win.getFormValues();
                 portlet.applyConfig(updatedConfig);
                 this.saveDashboardState();

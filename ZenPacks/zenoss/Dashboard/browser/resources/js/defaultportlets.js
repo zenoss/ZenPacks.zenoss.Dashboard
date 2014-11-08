@@ -16,6 +16,7 @@
     Ext.define('Zenoss.Dashboard.view.Portlet', {
         extend: 'Ext.panel.Panel',
         alias: 'widget.portlet',
+        title: '',
         layout: 'fit',
         anchor: '100%',
         frame: true,
@@ -112,6 +113,7 @@
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.htmlportlet',
         height: 100,
+        title: 'HTML Portlet',
         content: "<h1>Blank HTMLPortlet</h1>",
         initComponent: function(){
 
@@ -158,7 +160,7 @@
         constructor: function(config) {
             config = config || {};
             Ext.applyIf(config, {
-                model: 'Zenoss.model.Basic',
+                model: 'Zenoss.Dashboard.model.DeviceIssueModel',
                 initialSortColumn: "name",
                 directFn: Zenoss.remote.DashboardRouter.getSubOrganizers,
                 root: 'data'
@@ -174,6 +176,7 @@
     Ext.define('Zenoss.Dashboard.portlets.GoogleMaps', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.googlemapportlet',
+        title: _t('Google Maps'),
         height: 400,
         pollingrate: 400,
         baselocation: "/zport/dmd/Locations",
@@ -240,6 +243,7 @@
     Ext.define('Zenoss.Dashboard.portlets.SiteWindowPortlet', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.sitewindowportlet',
+        title: _t('Site Window'),
         height: 400,
         siteUrl: "about:blank",
         initComponent: function(){
@@ -290,6 +294,7 @@
         fields: [
             {name: 'uid'},
             {name: 'name'},
+            {name: 'fullOrganizerName'},
             {name: 'events'},
             {name: 'icon'},
         ]
@@ -321,6 +326,7 @@
     Ext.define('Zenoss.Dashboard.portlets.DeviceIssues', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.deviceissuesportlet',
+        title: _t('Device Issues'),
         height: 400,
         initComponent: function(){
             var store = Ext.create('Zenoss.Dashboard.stores.DeviceIssues', {});
@@ -412,6 +418,7 @@
     Ext.define('Zenoss.Dashboard.portlets.DaemonProcessDown', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.daemonprocessportlet',
+        title: _t('Deamon Processes Down'),
         height: 250,
         initComponent: function(){
             Ext.apply(this, {
@@ -447,12 +454,14 @@
     });
 
     /**
-     * Daemon Processes Down Portlet. Shows daemons that are down by the heart beat
+     * Production State Portlet. Shows a list of devices and their production state.
+     * TODO: This could probably be refactored into a generic device list portlet, like a "device view"
      * @extends Zenoss.Dashboard.view.Portlet
      **/
     Ext.define('Zenoss.Dashboard.portlets.ProductionState', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.productionstateportlet',
+        title: _t('Production States'),
         height: 250,
         productionStates: [300],
         initComponent: function(){
@@ -495,8 +504,10 @@
         applyConfig: function(config) {
             if (this.rendered) {
                 var grid = this.down('grid');
-                grid.getStore().setParamsParam('productionState', config.productionStates);
-                grid.getStore().load();
+                if (config.productionStates) {
+                    grid.getStore().setParamsParam('productionState', config.productionStates);
+                    grid.getStore().load();
+                }
             }
             this.callParent([config]);
         },
@@ -521,5 +532,149 @@
             return fields;
         }
     });
+
+
+
+    /**
+     * @class Zenoss.Dashboard.stores.WatchListStore
+     * @extend Zenoss.DirectStore
+     * Direct store for loading organizers
+     */
+    Ext.define("Zenoss.Dashboard.stores.WatchListStore", {
+        extend: "Zenoss.NonPaginatedStore",
+        constructor: function(config) {
+            config = config || {};
+            Ext.applyIf(config, {
+                model: 'Zenoss.Dashboard.model.DeviceIssueModel',
+                initialSortColumn: "name",
+                directFn: Zenoss.remote.DashboardRouter.getInfos,
+                root: 'data'
+            });
+            this.callParent(arguments);
+        }
+    });
+
+    /**
+     * Watch List Portlet. Shows a collection organizers and events on those organizers
+     * @extends Zenoss.Dashboard.view.Portlet
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.WatchList', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.watchlistportlet',
+        title: _t('Watch List'),
+        height: 300,
+        uids: ['/zport/dmd/Devices/Discovered'],
+        initComponent: function(){
+            var me = this,
+                store = Ext.create('Zenoss.Dashboard.stores.WatchListStore', {});
+            store.setBaseParam('uids', this.uids);
+            store.setBaseParam('keys', Ext.pluck(Zenoss.Dashboard.model.DeviceIssueModel.prototype.fields.items, 'name'));
+            store.load();
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'grid',
+                    emptyText: _t('No records found.'),
+                    store: store,
+                    columns: [{
+                        dataIndex: 'name',
+                        header: _t('Object'),
+                        flex: 1,
+                        hideable: false,
+                        renderer: function(name, row, record) {
+                            return Zenoss.render.link(record.data.uid, null, name);
+                        }
+                    },{
+                        dataIndex: 'events',
+                        header: _t('Events'),
+                        width: 120,
+                        hideable: false,
+                        renderer: function(value) {
+                            return Zenoss.render.events(value);
+                        }
+                    }, {
+                        xtype: 'actioncolumn',
+                        width: 60,
+                        handler: function(grid, rowIndex){
+                            // get the record and remove it from the store
+                            var store = grid.getStore(), record = store.getAt(rowIndex);
+                            // filter out the remove uid
+                            me.uids = Zenoss.util.filter(me.uids, function(uid) {
+                                return uid != record.get('uid')
+                            });
+                            // update the store params
+                            store.setBaseParam('uids', me.uids);
+                            store.remove(record);
+                        },
+                        align: "center",
+                        text: _t('Remove'),
+                        icon: "/++resource++extjs/examples/restful/images/delete.png",
+                        altText: _t('Remove')
+                    }]
+                }]
+            });
+            this.callParent(arguments);
+        },
+        getConfig: function() {
+            return {
+                uids: this.uids
+            }
+        },
+        applyConfig: function(config) {
+            if (this.rendered) {
+                var grid = this.down('grid');
+                if (config.uids && config.uids != this.uids) {
+                    grid.getStore().setBaseParam('uids', config.uids);
+                    grid.getStore().load();
+                }
+
+            }
+            this.callParent([config]);
+        },
+        getCustomConfigFields: function() {
+            var me = this,
+                store = Ext.create('Zenoss.Dashboard.stores.Organizer', {
+                    sorters: [{
+                        property: 'fullOrganizerName',
+                        direction: 'ASC'
+                    }]
+                });
+            store.load({
+                params: {
+                    uid: '/zport/dmd',
+                    keys: ['uid', 'name', 'fullOrganizerName']
+                }
+            });
+            var fields = [{
+                xtype: 'combo',
+                queryMode: 'local',
+                displayField: 'fullOrganizerName',
+                valueField: 'uid',
+                listConfig: {
+                    resizable: true,
+                },
+                store: store,
+                editable: true,
+                forceSelection: true,
+                fieldLabel: _t('Zenoss Objects'),
+                itemId: 'organizerCombo',
+                width: 225
+            }, {
+                xtype: 'button',
+                paddingLeft: 20,
+                anchor: "20%",
+                text: _t('Add'),
+                handler: function(btn) {
+                    var combo = btn.up('form').down('combo[itemId="organizerCombo"]');
+                    console.log(combo.getValue());
+                    me.uids.push(combo.getValue());
+                    var grid = me.down('grid');
+                    grid.getStore().setBaseParam('uids', me.uids);
+                    grid.getStore().load();
+                }
+            }];
+            return fields;
+        }
+    });
+
 
 }())

@@ -8,12 +8,12 @@
 ##############################################################################
 from Acquisition import aq_base
 from zope.interface import implements
-from zenoss.protocols.services import ServiceException
-from Products.Zuul.interfaces import IFacade, IInfo
+from Products.Zuul.interfaces import IFacade, IInfo, ICatalogTool
 from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
 from Products.Zuul import getFacade
 from Products.ZenModel.Device import Device
+from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 from Products.ZenModel.ZenossSecurity import ZEN_VIEW
 from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
@@ -113,9 +113,29 @@ class DashboardFacade(ZuulFacade):
             results.append(dict(uid=group.getPrimaryId(), name=group.id))
         return results
 
+    def _getFullOrganizerName(self, obj):
+        rootName = obj.dmdRootName
+        return "/%s%s" % (rootName, obj.getOrganizerName())
+
     def getSubOrganizers(self, uid):
-        org = self._getObject(uid)
-        return [IInfo(org)] +  [IInfo(org) for org in org.getSubOrganizers()]
+        results = []
+        obj = self._getObject(uid)
+        searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        if isinstance(obj, DeviceOrganizer):
+            info = IInfo(obj)
+            info.fullOrganizerName = self._getFullOrganizerName(obj)
+            results.append(info)
+        for brain in searchresults:
+            try:
+                org = brain.getObject()
+                info = IInfo(org)
+                info.fullOrganizerName = self._getFullOrganizerName(org)
+                print info.fullOrganizerName
+                results.append(info)
+            except:
+                # error unbraining the object just skip it
+                pass
+        return results
 
     def getDeviceIssues(self):
         zep = getFacade('zep', self._dmd)

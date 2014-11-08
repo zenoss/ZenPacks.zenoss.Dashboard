@@ -8,6 +8,7 @@
 ##############################################################################
 from Products.ZenUtils.Ext import DirectRouter
 from Products import Zuul
+from Products.Zuul.interfaces import IInfo
 from Products.ZenUtils.Ext import DirectResponse
 
 class DashboardRouter(DirectRouter):
@@ -45,10 +46,10 @@ class DashboardRouter(DirectRouter):
         result = facade.getCurrentUsersGroups()
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
-    def getSubOrganizers(self, uid):
+    def getSubOrganizers(self, uid, keys=None):
         facade = self._getFacade()
         result = facade.getSubOrganizers(uid)
-        return DirectResponse.succeed(data=Zuul.marshal(result))
+        return DirectResponse.succeed(data=Zuul.marshal(result, keys=keys))
 
     def getDeviceIssues(self, keys=None):
         facade = self._getFacade()
@@ -59,3 +60,8 @@ class DashboardRouter(DirectRouter):
         facade = self._getFacade()
         result = facade.getDaemonProcessesDown()
         return DirectResponse.succeed(data=Zuul.marshal(result))
+
+    def getInfos(self, uids, keys):
+        facade = self._getFacade()
+        infos = [IInfo(facade._getObject(uid)) for uid in uids]
+        return DirectResponse.succeed(data=Zuul.marshal(infos, keys=keys))

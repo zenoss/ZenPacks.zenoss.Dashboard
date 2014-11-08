@@ -13,8 +13,28 @@
         extend: 'Zenoss.dialog.BaseWindow',
         alias: ['widget.addportletdialog'],
         constructor: function(config) {
-            var me = this;
+            var me = this, data = [], store;
+
+            // build an array of
+            // [portletId, portletName] for use in the Portlet Combobox
+            Ext.each(Object.keys(Zenoss.Dashboard.portlets), function(portletId) {
+                var portlet = Zenoss.Dashboard.portlets[portletId];
+                data.push([portletId, portlet.prototype.title]);
+            });
+            store = Ext.create('Ext.data.ArrayStore', {
+                data: data,
+                fields: [
+                       'id',
+                       'title'
+                    ],
+                sorters: [{
+                    property: 'title',
+                    direction: 'ASC'
+                }]
+            });
+
             config = config || {};
+
             Ext.applyIf(config, {
                 height: 600,
                 cls: 'white-background-panel',
@@ -27,7 +47,7 @@
                     layout: 'hbox',
                     listeners: {
                         validitychange: function(form, isValid) {
-                            me.query('button')[0].setDisabled(!isValid);
+                            me.query('button[ref="submitButton"]')[0].setDisabled(!isValid);
                         },
                         scope: this
                     },
@@ -43,7 +63,9 @@
                                 labelAlign: "top",
                                 fieldLabel: _t('Portlet'),
                                 labelWidth: 40,
-                                store: Object.keys(Zenoss.Dashboard.portlets),
+                                displayField: 'title',
+                                valueField: 'id',
+                                store: store,
                                 listeners: {
                                     select: this.showConfiguration,
                                     scope: this
@@ -56,11 +78,7 @@
                             layout: 'anchor',
                             defaults: {
                                 anchor: "90%",
-                                labelAlign: 'top',
-                                listeners: {
-                                    change: this.updatePreviewTask,
-                                    scope: this
-                                }
+                                labelAlign: 'top'
                             }
                         }],
                     },{
@@ -93,13 +111,23 @@
             var configPanel = this.down('panel[itemId="configuration"]'),
                 preview = this.down('panel[itemId="preview"]'),
                 portletCls = "Zenoss.Dashboard.portlets." + combo.getValue(), items, portlet;
-            portlet = Ext.create(portletCls, {});
+            portlet = Ext.create(portletCls, {
+                // make sure the header gear icon is not displayed
+                tools: []
+            });
             items = portlet.getConfigFields();
             configPanel.removeAll();
             configPanel.add([{
                 xtype: 'container',
                 html: Ext.String.format("<h1>{0}</h1>", _t('Configuration'))
             }].concat(items))
+
+            // set up event listeners for changing to update the preview
+            // do this here instead of in the config so portlets configuration fields
+            // can set up their own listeners
+            Ext.each(configPanel.query('field'), function(field){
+                field.on('change', this.updatePreviewTask, this);
+            }, this);
 
             preview.removeAll();
             preview.add([{
@@ -134,6 +162,7 @@
             }
             var portlet = config.portlet,
                 me = this, portletConfig = portlet.initialConfig;
+            portletConfig.tools = [];
             Ext.applyIf(config, {
                 height: 600,
                 width: 800,
@@ -149,17 +178,18 @@
                     layout: 'anchor',
                     listeners: {
                         validitychange: function(form, isValid) {
-                            me.query('button')[0].setDisabled(!isValid);
+                            me.query('button[ref="submitButton"]')[0].setDisabled(!isValid);
+                        },
+                        afterrender: function(form) {
+                            Ext.each(form.query('field'), function(field){
+                                field.on('change', me.updatePreviewTask, me);
+                            });
                         },
                         scope: this
                     },
                     defaults: {
                         anchor: "90%",
-                        labelAlign: 'top',
-                        listeners: {
-                            change: this.updatePreviewTask,
-                            scope: this
-                        }
+                        labelAlign: 'top'
                     },
                     items: [{
                         xtype: 'container',
@@ -322,20 +352,6 @@
 
         alias: 'widget.dashboardpanel',
 
-        getTools: function(){
-            return [{
-                xtype: 'tool',
-                type: 'gear',
-                handler: function(e, target, panelHeader, tool){
-                    var portlet = panelHeader.ownerCt;
-                    portlet.setLoading('Loading...');
-                    Ext.defer(function() {
-                        portlet.setLoading(false);
-                    }, 2000);
-                }
-            }];
-        },
-
         initComponent: function() {
 
             Ext.applyIf(this, {
@@ -347,6 +363,8 @@
                         labelWidth: 80,
                         fieldLabel: _t('Dashboards'),
                         queryMode: 'local',
+                        stateId: 'selected_dashboard',
+                        stateful: true,
                         itemId: 'currentDashboard',
                         displayField: 'id',
                         valueField: 'uid',
@@ -354,9 +372,14 @@
                         listeners: {
                             afterrender: function(combo) {
                                 combo.getStore().on('load', function(){
-                                    var recordSelected = combo.getStore().getAt(0);
-                                    combo.setValue(recordSelected.get('uid'));
-                                    combo.fireEvent('select', [combo, recordSelected]);
+                                    // if we don't have anything set by the "state" of the combo
+                                    // then go ahead and force select the first item
+                                    if (!combo.getValue()) {
+                                        var recordSelected = combo.getStore().getAt(0);
+                                        combo.setValue(recordSelected.get('uid'));
+                                    }
+                                    // this actually renders the dashboard
+                                    combo.fireEvent('select', [combo, combo.getValue()]);
                                 }, this, {single: true});
 
                             }
