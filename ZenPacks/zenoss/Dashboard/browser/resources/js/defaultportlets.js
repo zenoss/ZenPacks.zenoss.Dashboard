@@ -675,6 +675,119 @@
             return fields;
         }
     });
+    Ext.chart.theme.White = Ext.extend(Ext.chart.theme.Base, {
+        constructor: function() {
+            Ext.chart.theme.White.superclass.constructor.call(this, {
+                axis: {
+                    stroke: 'rgb(8,69,148)',
+                    'stroke-width': 1
+                },
+                axisLabel: {
+                    fill: 'rgb(8,69,148)',
+                    font: '12px Arial',
+                    'font-family': '"Arial',
+                    spacing: 2,
+                    padding: 5,
+                    renderer: function(v) { return v; }
+                },
+                axisTitle: {
+                    font: 'bold 18px Arial'
+                }
+            });
+        }
+    });
 
+    /**
+     *  Portlet that shows the open events by severity
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.OpenEventsChart', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.openeventsportlet',
+        height: 350,
+        title: 'Open Events Chart',
+        initComponent: function(){
+            Ext.applyIf(this, {
+                items:[{
+                    animate: true,
+                    xtype: 'chart',
+                    flex: .4,
+                    height: 180,
+                    shadow: false,
+                    store: Ext.create('Ext.data.ArrayStore', {
+                        fields: ['name', 'value'],
+                        data: []
+                    }),
+                    axes: [{
+                        type: 'Numeric',
+                        position: 'left',
+                        fields: ['value'],
+                        title: _t('Open Events')
+                    },{
+                        type: 'Category',
+                        position: 'bottom',
+                        fields: ['name'],
+                        title: _t('Severity')
+                    }],
+                    theme: 'White',
+                    series: [{
+                        type: 'bar',
+                        column: true,
+                        axis: 'left',
+                        xPadding: 10,
+                        yPadding: 2,
+                        highlight: true,
+                        renderer: function(sprite, record, attr, index, store) {
+                            var colors = ["#d60000",  "#ff9711", "#fbd13d", "#0472b8", "#CACACA"];
+
+                            return Ext.apply(attr, {
+                                fill: colors[index % colors.length]
+                            });
+                        },
+                        tips: {
+                            trackMouse: true,
+                            width: 175,
+                            height: 22,
+                            renderer: function(storeItem, item) {
+                                var msg = Ext.String.format(_t("{0} Open {1} Events."), storeItem.get('value'), storeItem.get('name'));
+                                this.setTitle(msg);
+                            }
+                        },
+                        label: {
+                            display: 'insideEnd',
+                            field: 'value',
+                            renderer: Ext.util.Format.numberRenderer('0'),
+                            orientation: 'horizontal',
+                            color: '#FFFFF',
+                            'text-anchor': 'middle'
+                        },
+                        xField: 'name',
+                        yField: ['value']
+                    }]
+
+                }]
+
+            });
+            this.callParent(arguments);
+            this.fetchEvents();
+        },
+        fetchEvents: function() {
+            // gets all the open events for now
+            Zenoss.remote.DeviceRouter.getInfo({
+                uid: '/zport/dmd/Devices',
+                keys: ['events']
+            }, this.loadData, this);
+        },
+        loadData: function(response) {
+            if (!response.success) {
+                return
+            }
+            var store = this.down('chart').getStore(), data = [],
+                types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'];
+            types.forEach(function(type) {
+                data.push([type, response.data.events[type.toLowerCase()].count]);
+            });
+            store.loadData(data);
+        }
+    });
 
 }())
