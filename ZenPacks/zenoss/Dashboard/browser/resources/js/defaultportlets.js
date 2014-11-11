@@ -783,7 +783,7 @@
             }
             var store = this.down('chart').getStore(), data = [],
                 types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'];
-            types.forEach(function(type) {
+            Ext.Array.each(types, function(type) {
                 data.push([type, response.data.events[type.toLowerCase()].count]);
             });
             store.loadData(data);
