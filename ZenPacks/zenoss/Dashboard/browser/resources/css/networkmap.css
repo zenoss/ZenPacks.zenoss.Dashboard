@@ -5,12 +5,12 @@
 
 .node circle.selected{
     /*fill: #5555cc;*/
-    fill:pink;
+    fill:#eee;
 }
 
 .node text{
-    stroke: #000;
     stroke-width: 1px;
+    fill: #5555cc;
 }
 
 .link {

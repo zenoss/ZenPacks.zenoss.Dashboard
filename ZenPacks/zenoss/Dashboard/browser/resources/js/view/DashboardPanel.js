@@ -78,8 +78,7 @@
                             layout: 'anchor',
                             defaults: {
                                 anchor: "90%",
-                                labelAlign: 'top',
-                                paddingBottom: 10
+                                labelAlign: 'top'
                             }
                         }]
                     },{
@@ -192,7 +191,10 @@
                     },
                     defaults: {
                         anchor: "90%",
-                        labelAlign: 'top'
+                        labelAlign: 'top',
+                        style: {
+                            marginTop: "10px"
+                        }
                     },
                     items: [{
                         xtype: 'container',
