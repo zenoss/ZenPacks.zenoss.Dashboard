@@ -31,6 +31,7 @@
         cls: 'x-portlet',
         tools: [{
             xtype: 'tool',
+            itemId: 'editPortlet',
             type: 'gear'
         }],
         // Override Panel's default doClose to provide a custom fade out effect
@@ -790,4 +791,4 @@
         }
     });
 
-}())
+}());

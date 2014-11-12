@@ -113,14 +113,15 @@
                 portletCls = "Zenoss.Dashboard.portlets." + combo.getValue(), items, portlet;
             portlet = Ext.create(portletCls, {
                 // make sure the header gear icon is not displayed
-                tools: []
+                tools: [],
+                draggable: false
             });
             items = portlet.getConfigFields();
             configPanel.removeAll();
             configPanel.add([{
                 xtype: 'container',
                 html: Ext.String.format("<h1>{0}</h1>", _t('Configuration'))
-            }].concat(items))
+            }].concat(items));
 
             // set up event listeners for changing to update the preview
             // do this here instead of in the config so portlets configuration fields
@@ -133,7 +134,7 @@
             preview.add([{
                 xtype: 'container',
                 html: Ext.String.format("<h1>{0}</h1>", _t('Preview'))
-            }, portlet])
+            }, portlet]);
 
 
             configPanel.down('textfield[name="title"]').focus(false, 250);
@@ -163,6 +164,7 @@
             var portlet = config.portlet,
                 me = this, portletConfig = portlet.initialConfig;
             portletConfig.tools = [];
+            portletConfig.draggable = false;
             Ext.applyIf(config, {
                 height: 600,
                 width: 800,
@@ -396,10 +398,12 @@
                         }]
                     },{
                         xtype:'button',
-                        iconCls:'delete'
+                        iconCls:'delete',
+                        itemId: 'deleteDashboard'
                     },{
                         xtype: 'button',
-                        iconCls: 'customize'
+                        iconCls: 'customize',
+                        itemId: 'editDashboard'
                     }]
                 }],
                 items: []

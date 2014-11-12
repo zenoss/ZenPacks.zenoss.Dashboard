@@ -39,17 +39,17 @@
                 'menuitem[itemId="newDashboard"]': {
                     click: this.showNewDashboardDialog
                 },
-                'button[iconCls="delete"]': {
+                'button[itemId="deleteDashboard"]': {
                     click: this.deleteSelectedDashboard
                 },
-                'button[iconCls="customize"]': {
+                'button[itemId="editDashboard"]': {
                     click: this.editSelectedDashboard
                 },
                 'portlet': {
                     close: this.saveDashboardState,
                     resize: this.saveDashboardState
                 },
-                'portlet tool[type="gear"]': {
+                'portlet tool[itemId="editPortlet"]': {
                     click: this.showEditPortletDialog
                 },
                 'combo[itemId="currentDashboard"]': {

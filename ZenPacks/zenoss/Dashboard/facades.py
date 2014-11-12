@@ -8,11 +8,13 @@
 ##############################################################################
 from Acquisition import aq_base
 from zope.interface import implements
-from Products.Zuul.interfaces import IFacade, IInfo, ICatalogTool
+from zope.component import getMultiAdapter
+from Products.Zuul.interfaces import IFacade, IInfo, ICatalogTool, template as templateInterfaces
 from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
 from Products.Zuul import getFacade
 from Products.ZenModel.Device import Device
+from Products.ZenModel.DataPointGraphPoint import DataPointGraphPoint
 from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 from Products.ZenModel.ZenossSecurity import ZEN_VIEW
@@ -160,3 +162,40 @@ class DashboardFacade(ZuulFacade):
     def getDaemonProcessesDown(self):
         return getHeartbeatObjects(deviceRoot=self._dmd.Devices,
                                    keys=['host', 'process', 'secondsDown', 'monitor'])
+
+    def getDeviceClassGraphPoints(self, deviceClassName):
+        """
+        Expects a device class organizer name and returns a list of graph points
+
+        This is used by the device chart portlet
+        """
+        deviceClass = self._dmd.Devices.getOrganizer(deviceClassName)
+        results = []
+        for rrdTemplate in deviceClass.rrdTemplates():
+            for graphDefinition in rrdTemplate.graphDefs():
+                for graphPoint in graphDefinition.graphPoints():
+                    # complex or thresholds can't really be graphed at this point
+                    if not isinstance(graphPoint, DataPointGraphPoint):
+                        continue
+                    results.append({
+                        'name': "%s ( %s/%s )" % (graphPoint.id, rrdTemplate.id, graphDefinition.id),
+                        'uid': graphPoint.getPrimaryId()
+                    })
+        return results
+
+
+    def getDeviceClassGraphDefinition(self, deviceClassName, graphPointsUids):
+        deviceClass = self._dmd.Devices.getOrganizer(deviceClassName)
+        # grab the first then so we don't clutter the graph.
+        # TODO: Either allow them to select specific devices or do something
+        # smarter about which devices to show (like sort by events etc)
+        devices = deviceClass.devices()[:10]
+        results = []
+        for uid in graphPointsUids:
+            gp = self._getObject(uid)
+            for device in devices:
+                results.append(getMultiAdapter((gp, device), templateInterfaces.IMetricServiceGraphPoint))
+        # let the graph points know that they need the device name in the legend and to ignore the graph point color
+        for info in results:
+            info.setMultiContext()
+        return results
