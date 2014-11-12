@@ -78,9 +78,10 @@
                             layout: 'anchor',
                             defaults: {
                                 anchor: "90%",
-                                labelAlign: 'top'
+                                labelAlign: 'top',
+                                paddingBottom: 10
                             }
-                        }],
+                        }]
                     },{
                         xtype: 'panel',
                         flex: .6,

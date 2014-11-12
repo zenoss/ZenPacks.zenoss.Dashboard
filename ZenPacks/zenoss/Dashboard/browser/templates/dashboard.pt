@@ -9,6 +9,8 @@
 
 <tal:block metal:fill-slot="script_layout">
 <link rel="stylesheet" type="text/css" href="++resource++dashboard/css/portal.css">
+<link rel="stylesheet" type="text/css" href="++resource++dashboard/css/networkmap.css">
+<script src="/++resource++dashboard/js/lib/d3.v3.min.js" type="text/javascript"></script>
 <script
     tal:attributes="src python: context.zport.getVersionedResourcePath('/++resource++dashboard/js/app.js')"
 >

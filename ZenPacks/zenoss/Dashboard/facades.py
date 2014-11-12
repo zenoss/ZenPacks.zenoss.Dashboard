@@ -14,6 +14,7 @@ from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
 from Products.Zuul import getFacade
 from Products.ZenModel.Device import Device
+from Products.ZenUtils import NetworkTree
 from Products.ZenModel.DataPointGraphPoint import DataPointGraphPoint
 from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
@@ -199,3 +200,34 @@ class DashboardFacade(ZuulFacade):
         for info in results:
             info.setMultiContext()
         return results
+
+    def getNetworks(self):
+        root = self._dmd.Networks
+        return [IInfo(child) for child in root.children()]
+
+    def getNetworkMapData(self, uid, depth=2):
+        obj = self._getObject(uid)
+        edges = list(NetworkTree.get_edges(obj, depth=depth, withIcons=True))
+        nodes = []
+        links = []
+        for a, b in edges:
+            node1 =  {
+                'id': a[0],
+                'prop': a[0],
+                'icon': a[1],
+                'color': a[2]
+            }
+            node2 = {
+                'id': b[0],
+                'prop': b[0],
+                'icon': b[1],
+                'color': b[2]
+            }
+            link = {
+                'source': a[0],
+                'target': b[0]
+            }
+            if node1 not in nodes: nodes.append(node1)
+            if node2 not in nodes: nodes.append(node2)
+            if link not in links: links.append(link)
+        return dict(links=links, nodes=nodes)

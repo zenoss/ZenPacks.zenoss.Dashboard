@@ -1,0 +1,20 @@
+.node rect{
+    fill: #eee;
+    stroke-width: 2px;
+}
+
+.node circle.selected{
+    /*fill: #5555cc;*/
+    fill:pink;
+}
+
+.node text{
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+.link {
+    stroke: #ccc;
+    stroke-opacity: 1;
+    stroke-width: 2px;
+}

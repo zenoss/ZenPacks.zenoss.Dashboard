@@ -76,3 +76,13 @@ class DashboardRouter(DirectRouter):
         infos = facade.getDeviceClassGraphDefinition(deviceClass, graphPointsUids)
         result = [Zuul.marshal(info) for info in infos]
         return DirectResponse.succeed(data=result)
+
+    def getNetworks(self):
+        facade = self._getFacade()
+        result = facade.getNetworks()
+        return DirectResponse.succeed(data=Zuul.marshal(result, keys=['uid', 'name']))
+
+    def getNetworkMapData(self, uid, depth):
+        facade = self._getFacade()
+        result = facade.getNetworkMapData(uid, depth)
+        return DirectResponse.succeed(data=Zuul.marshal(result))
