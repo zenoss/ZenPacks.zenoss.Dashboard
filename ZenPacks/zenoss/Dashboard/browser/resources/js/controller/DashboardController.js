@@ -150,7 +150,7 @@
         deleteSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard(), me = this;
             new Zenoss.dialog.SimpleMessageDialog({
-                message: Ext.String.format(_t("Are you sure you want to move the dashboard: {0} ?"), dashboard.get('id')),
+                message: Ext.String.format(_t("Are you sure you want to delete the dashboard: {0} ?"), dashboard.get('id')),
                 title: _t('Delete Dashboard'),
                 buttons: [{
                     xtype: 'DialogButton',

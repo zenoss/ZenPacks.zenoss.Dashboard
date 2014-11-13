@@ -33,7 +33,13 @@
     Ext.define("Zenoss.Dashboard.model.Dashboard", {
         extend: 'Ext.data.Model',
         idProperty: 'uid',
-        fields: ['uid', 'id', 'name', 'columns', 'contextUid', 'contextType', 'state']
+        fields: ['uid', 'id', 'name', 'columns', 'contextUid', 'contextType', 'state', 'owner',
+                 {
+                     name: 'idwithOwner',
+                     convert: function(v, record){
+                         return Ext.String.format("{0} ({1})", record.data.id, record.data.owner);
+                     }
+                 }]
     });
 
     /**

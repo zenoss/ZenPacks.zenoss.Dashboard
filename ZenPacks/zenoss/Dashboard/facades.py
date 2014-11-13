@@ -46,6 +46,8 @@ class DashboardFacade(ZuulFacade):
         obj = self._getContext(uid)
         d = Dashboard(newId)
         d.columns = columns
+        user = self._dmd.ZenUsers.getUserSettings()
+        d.owner = user.id
         obj.dashboards._setObject(newId, d)
 
     def saveDashboard(self, data):

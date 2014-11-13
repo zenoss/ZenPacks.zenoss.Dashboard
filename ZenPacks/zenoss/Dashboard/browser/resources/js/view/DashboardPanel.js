@@ -366,12 +366,13 @@
                     items:[{
                         xtype: 'combo',
                         labelWidth: 80,
+                        width: 250,
                         fieldLabel: _t('Dashboards'),
                         queryMode: 'local',
                         stateId: 'selected_dashboard',
                         stateful: true,
                         itemId: 'currentDashboard',
-                        displayField: 'id',
+                        displayField: 'idwithOwner',
                         valueField: 'uid',
                         store: Ext.create('Zenoss.Dashboard.model.DashboardStore', {}),
                         listeners: {

@@ -7,6 +7,9 @@
  *
  ****************************************************************************/
 (function() {
+    Ext.ns('Zenoss.Dashboard');
+    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://www2.zenoss.com/in-app-welcome";
+
     /**
      * @class Zenoss.Dashboard.view.Portlet
      * @extends Ext.panel.Panel
@@ -127,7 +130,7 @@
         getConfig: function() {
             return {
                 html: this.content
-            }
+            };
         },
         applyConfig: function(config) {
             if (config.html && config.html != this.content) {
@@ -200,12 +203,12 @@
             return {
                 baselocation: this.baselocation,
                 pollingrate: this.pollingrate
-            }
+            };
         },
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                this.down('iframe').load(this.getIFrameSource())
+                this.down('iframe').load(this.getIFrameSource());
             }
         },
         getCustomConfigFields: function() {
@@ -246,8 +249,13 @@
         alias: 'widget.sitewindowportlet',
         title: _t('Site Window'),
         height: 400,
-        siteUrl: "about:blank",
+        siteUrl: Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL,
         initComponent: function(){
+
+            // for the default show specific to this product
+            if (this.siteUrl === Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL) {
+                this.siteUrl += '?v=' + Zenoss.env.ZENOSS_VERSION + '&p=' + Zenoss.env.ZENOSS_PRODUCT;
+            }
             Ext.apply(this, {
                 items: [{
                     xtype: 'iframe',
@@ -263,12 +271,12 @@
         getConfig: function() {
             return {
                 siteUrl: this.siteUrl
-            }
+            };
         },
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                this.down('iframe').load(this.getIFrameSource())
+                this.down('iframe').load(this.getIFrameSource());
             }
         },
         getCustomConfigFields: function() {
@@ -297,7 +305,7 @@
             {name: 'name'},
             {name: 'fullOrganizerName'},
             {name: 'events'},
-            {name: 'icon'},
+            {name: 'icon'}
         ]
     });
 
@@ -500,7 +508,7 @@
         getConfig: function() {
             return {
                 productionStates: this.productionStates
-            }
+            };
         },
         applyConfig: function(config) {
             if (this.rendered) {
@@ -618,7 +626,7 @@
         getConfig: function() {
             return {
                 uids: this.uids
-            }
+            };
         },
         applyConfig: function(config) {
             if (this.rendered) {
