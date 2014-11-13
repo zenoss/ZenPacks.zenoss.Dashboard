@@ -91,6 +91,9 @@
                 this.fetchGraphDefinition();
             }
         },
+        onRefresh: function() {
+            this.down('europagraph').updateGraph({});
+        },
         getCustomConfigFields: function() {
             var fields = [{
                 xtype: 'combo',

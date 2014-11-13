@@ -37,6 +37,8 @@
             itemId: 'editPortlet',
             type: 'gear'
         }],
+        // defeault to refresh every 5 minutes
+        refreshInterval: 300,
         // Override Panel's default doClose to provide a custom fade out effect
         // when a portlet is removed from the portal
         doClose: function() {
@@ -59,6 +61,43 @@
             this.applyConfig(config.config || {});
             this.callParent([config]);
         },
+        initComponent: function(){
+            this.addEvents(
+                /**
+                 * @event refresh
+                 * Fires when the portlet is set to refresh
+                 * @param {Zenoss.Dashboard.view.Portlet} this
+                 */
+                'refresh',
+                /**
+                 * @event applyconfig
+                 * Fires immediately after the config has been updated on a portlet
+                 * @param {Zenoss.Dashboard.view.Portlet} this
+                 */
+                'applyconfig'
+            );
+
+            this.callParent(arguments);
+            this.on('afterrender', this.startRefresh, this, {single: true});
+        },
+        startRefresh: function() {
+            this.refreshTask = Ext.TaskManager.start({
+                run: Ext.bind(this.refresh, this),
+                interval: this.refreshInterval * 1000,
+                fireOnStart: false
+            });
+        },
+        refresh: function() {
+            this.fireEvent('refresh', this);
+            this.onRefresh();
+        },
+        /**
+         * Template method for what happens when a portlet
+         * refreshes.
+         **/
+        onRefresh: function() {
+
+        },
         /**
          * Template method that is called when we are
          * fetching the configuration for this portlet.
@@ -80,6 +119,14 @@
                 name: 'height',
                 fieldLabel: _t('Height'),
                 value: this.getEl() ? this.getHeight() : this.height
+            }, {
+                xtype: 'numberfield',
+                name: 'refreshInterval',
+                fieldLabel: _t('Refresh Interval (seconds)'),
+                value: this.refreshInterval,
+                // some of the portlets might be expensive
+                // so keep the min refresh sane
+                minValue: 60
             }];
 
             return fields.concat(this.getCustomConfigFields());
@@ -102,8 +149,15 @@
             if (config.title) {
                 this.setTitle(config.title);
             }
+
+            // update the refresh interval
+            if (config.refresh && config.refresh != this.refresh) {
+                this.refreshTask.restart(config.refreshInterval * 1000);
+            }
+
             // by default apply all the config properties to this object
             Ext.apply(this, config);
+            this.fireEvent('applyconfig', this);
         }
     });
 
@@ -208,8 +262,11 @@
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                this.down('iframe').load(this.getIFrameSource());
+                this.onRefresh();
             }
+        },
+        onRefresh: function() {
+            this.down('iframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
@@ -249,6 +306,8 @@
         alias: 'widget.sitewindowportlet',
         title: _t('Site Window'),
         height: 400,
+        // since it's a url it doesn't really need to refresh all that often
+        refreshInterval: 3000,
         siteUrl: Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL,
         initComponent: function(){
 
@@ -276,8 +335,11 @@
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                this.down('iframe').load(this.getIFrameSource());
+                this.onRefresh();
             }
+        },
+        onRefresh: function() {
+            this.down('iframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var fields = [{
@@ -382,6 +444,14 @@
                 }]
             });
             this.callParent(arguments);
+        },
+        onRefresh: function() {
+            var store = this.down('grid').getStore();
+            store.load({
+                params: {
+                    keys: Ext.pluck(Zenoss.Dashboard.model.DeviceIssueModel.prototype.fields.items, 'name')
+                }
+            });
         }
     });
 
@@ -459,6 +529,9 @@
                 }]
             });
             this.callParent(arguments);
+        },
+        onRefresh: function() {
+            this.down('grid').getStore().load();
         }
     });
 
@@ -504,6 +577,9 @@
                 }]
             });
             this.callParent(arguments);
+        },
+        onRefresh: function() {
+            this.down('grid').getStore().load();
         },
         getConfig: function() {
             return {
@@ -623,6 +699,9 @@
             });
             this.callParent(arguments);
         },
+        onRefresh: function() {
+            this.down('grid').getStore().load();
+        },
         getConfig: function() {
             return {
                 uids: this.uids
@@ -659,7 +738,7 @@
                 displayField: 'fullOrganizerName',
                 valueField: 'uid',
                 listConfig: {
-                    resizable: true,
+                    resizable: true
                 },
                 store: store,
                 editable: true,
@@ -779,6 +858,9 @@
             this.callParent(arguments);
             this.fetchEvents();
         },
+        onRefresh: function() {
+            this.fetchEvents();
+        },
         fetchEvents: function() {
             // gets all the open events for now
             Zenoss.remote.DeviceRouter.getInfo({
@@ -788,7 +870,7 @@
         },
         loadData: function(response) {
             if (!response.success) {
-                return
+                return;
             }
             var store = this.down('chart').getStore(), data = [],
                 types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'];
@@ -882,13 +964,15 @@
 
             node.attr("transform", function(d) { return "translate(" + d.x + ", " + d.y + ")"; });
         },
+        onRefresh: function() {
+            this.update();
+        },
         update: function() {
             var self = this;
             var node = this.svg.selectAll(".node");
             var link = this.svg.selectAll(".link");
             var nodeHeight = 25,
                 nodeWidth = 125;
-            console.log(self.network);
             Zenoss.remote.DashboardRouter.getNetworkMapData({
                 uid: self.network,
                 depth: self.depth
