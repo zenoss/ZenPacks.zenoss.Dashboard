@@ -135,7 +135,6 @@ class DashboardFacade(ZuulFacade):
                 org = brain.getObject()
                 info = IInfo(org)
                 info.fullOrganizerName = self._getFullOrganizerName(org)
-                print info.fullOrganizerName
                 results.append(info)
             except:
                 # error unbraining the object just skip it
