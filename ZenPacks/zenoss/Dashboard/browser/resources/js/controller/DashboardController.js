@@ -141,6 +141,7 @@
                         record = combo.getStore().findRecord('id', id);
                         if (record) {
                             combo.setValue(record.get('uid'));
+                            this.renderCurrentDashboard();
                         }
                     }
                 },
@@ -149,6 +150,20 @@
         },
         deleteSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard(), me = this;
+            // make sure we always have the default dashboard
+            if (dashboard.get('uid') == "/zport/dmd/ZenUsers/dashboards/default") {
+                new Zenoss.dialog.SimpleMessageDialog({
+                    message: _t("You can not delete the default Dashboard"),
+                    title: _t('Delete Dashboard'),
+                    buttons: [{
+                        xtype: 'DialogButton',
+                        text: _t('Cancel')
+                    }]
+                }).show();
+                return;
+            }
+
+            // prompt them to delete the dashboard
             new Zenoss.dialog.SimpleMessageDialog({
                 message: Ext.String.format(_t("Are you sure you want to delete the dashboard: {0} ?"), dashboard.get('id')),
                 title: _t('Delete Dashboard'),
@@ -160,6 +175,11 @@
                             uid: dashboard.get('uid')
                         }, function(){
                             me.reloadDashboards();
+                            var combo = me.getDashboardSelecter();
+                            // select the first dashboard
+                            var dashboard = combo.getStore().getAt(0);
+                            combo.setValue(dashboard.get('uid'));
+                            me.renderCurrentDashboard();
                         });
                     }
                 }, {

@@ -9,7 +9,10 @@
 from Products.ZenUtils.Ext import DirectRouter
 from Products import Zuul
 from Products.Zuul.interfaces import IInfo
+from Products.Zuul.decorators import require
 from Products.ZenUtils.Ext import DirectResponse
+from Products.ZenMessaging.audit import audit
+
 
 class DashboardRouter(DirectRouter):
     def _getFacade(self):
@@ -21,24 +24,35 @@ class DashboardRouter(DirectRouter):
         results = facade.getAvailableDashboards()
         return DirectResponse.succeed(data=Zuul.marshal(results))
 
+    @require('Add DMD Objects')
     def addDashboard(self, newId, uid, columns):
         facade = self._getFacade()
         result = facade.addDashboard(newId, uid, columns)
+        audit('UI.Dashboard.Add', uid, newId=newId)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
+    @require('Delete objects')
     def deleteDashboard(self, uid):
         facade = self._getFacade()
+        obj = facade._getObject(uid)
+        # can't delete the default dashboard
+        if obj.id == "default":
+            return
         result = facade.deleteObject(uid)
+        audit('UI.Dashboard.Remove', uid)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
+    @require('Change Device')
     def saveDashboard(self, **data):
         facade = self._getFacade()
         result = facade.saveDashboard(data)
+        audit('UI.Dashboard.Edit', data_=data)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
     def saveDashboardState(self, uid, state):
         facade = self._getFacade()
         result = facade.saveDashboardState(uid, state)
+        audit('UI.Dashboard.Edit', state=state)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
     def getCurrentUsersGroups(self):

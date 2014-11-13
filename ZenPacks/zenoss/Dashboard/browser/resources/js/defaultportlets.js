@@ -872,6 +872,9 @@
             if (!response.success) {
                 return;
             }
+            if (!this.down('chart')){
+                console.log(this);
+            }
             var store = this.down('chart').getStore(), data = [],
                 types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'];
             Ext.Array.each(types, function(type) {

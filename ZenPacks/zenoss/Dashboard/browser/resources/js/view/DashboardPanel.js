@@ -269,7 +269,7 @@
                 }, {
                     xtype: 'numberfield',
                     fieldLabel: _t('Number of Columns'),
-                    minValue: 0,
+                    minValue: 1,
                     maxValue: 10,
                     value: 3
                 }],
@@ -325,7 +325,7 @@
                 }, {
                     xtype: 'numberfield',
                     fieldLabel: _t('Number of Columns'),
-                    minValue: 0,
+                    minValue: 1,
                     maxValue: 10,
                     value: config.dashboard.get('columns')
                 }],
@@ -393,6 +393,7 @@
                     },'->',{
                         xtype: 'button',
                         iconCls:'add',
+                        hidden: Zenoss.Security.doesNotHavePermission('Add DMD Objects'),
                         menu: [{
                             text: _t('Add Portlet'),
                             itemId: 'newPortlet'
@@ -403,10 +404,12 @@
                     },{
                         xtype:'button',
                         iconCls:'delete',
+                        hidden: Zenoss.Security.doesNotHavePermission('Delete objects'),
                         itemId: 'deleteDashboard'
                     },{
                         xtype: 'button',
                         iconCls: 'customize',
+                        hidden: Zenoss.Security.doesNotHavePermission('Change Device'),
                         itemId: 'editDashboard'
                     }]
                 }],
