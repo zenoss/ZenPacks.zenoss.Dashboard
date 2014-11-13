@@ -318,6 +318,7 @@
                     maskRe: /[a-zA-Z0-9-_~,.$\(\)# @]/,
                     fieldLabel: _t('Dashboard Name'),
                     allowBlank: false,
+                    disabled: config.dashboard.get('id') == 'default',
                     value: config.dashboard.get('id')
                 }, {
                     xtype: 'dashboardcontext',
