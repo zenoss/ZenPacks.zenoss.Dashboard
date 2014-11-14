@@ -39,6 +39,7 @@
                 height: 600,
                 cls: 'white-background-panel',
                 width: 800,
+		layout: 'form',
                 title: _t('Add Portlet'),
                 items: [{
                     xtype: 'form',
@@ -55,9 +56,11 @@
                         xtype: 'panel',
                         layout: 'vbox',
                         flex: .3,
+			height: 500,
                         items:[ {
                             xtype: 'panel',
                             flex: .2,
+			    height: 100,
                             items: [{
                                 xtype: 'combo',
                                 labelAlign: "top",
