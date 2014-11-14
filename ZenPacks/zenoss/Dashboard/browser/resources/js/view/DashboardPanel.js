@@ -39,7 +39,7 @@
                 height: 600,
                 cls: 'white-background-panel',
                 width: 800,
-		layout: 'form',
+                layout: 'form',
                 title: _t('Add Portlet'),
                 items: [{
                     xtype: 'form',
@@ -55,12 +55,13 @@
                     items: [{
                         xtype: 'panel',
                         layout: 'vbox',
-                        flex: .3,
-			height: 500,
+                        flex: .4,
+                        height: 450,
                         items:[ {
                             xtype: 'panel',
-                            flex: .2,
-			    height: 100,
+                            flex: .1,
+                            width: "100%",
+                            height: 100,
                             items: [{
                                 xtype: 'combo',
                                 labelAlign: "top",
@@ -77,7 +78,8 @@
                         }, {
                             xtype: 'panel',
                             itemId: 'configuration',
-                            flex: .8,
+                            flex: .9,
+                            width: "100%",
                             layout: 'anchor',
                             defaults: {
                                 anchor: "90%",
@@ -88,7 +90,7 @@
                         xtype: 'panel',
                         flex: .6,
                         itemId: 'preview'
-                    }],
+                    }]
                 }],
                 buttons: [{
                     xtype: 'button',
@@ -133,13 +135,20 @@
                 field.on('change', this.updatePreviewTask, this);
             }, this);
 
+            // Set up the preview on the right hand side
             preview.removeAll();
             preview.add([{
                 xtype: 'container',
                 html: Ext.String.format("<h1>{0}</h1>", _t('Preview'))
             }, portlet]);
-
-
+            // when they resize the portlet update the number in the height field
+            portlet.on('resize', function(port, width, height) {
+                var cmp = this.down('numberfield[name="height"]');
+                if (cmp) {
+                    cmp.setValue(height);
+                }
+            }, this);
+            // focus on the text field for editing the name when the dialog is opened
             configPanel.down('textfield[name="title"]').focus(false, 250);
         },
         updatePreviewTask: function() {
@@ -229,6 +238,17 @@
                 }]
             });
             this.callParent([config]);
+
+        },
+        initComponent: function() {
+            this.callParent(arguments);
+            // when they resize the portlet update the number
+            this.down('portlet').on('resize', function(portlet, width, height) {
+                var cmp = this.down('numberfield[name="height"]');
+                if (cmp) {
+                    cmp.setValue(height);
+                }
+            }, this);
         },
         getFormValues: function() {
             return this.down('form').getForm().getFieldValues();
