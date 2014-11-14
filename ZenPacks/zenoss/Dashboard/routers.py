@@ -36,7 +36,7 @@ class DashboardRouter(DirectRouter):
         facade = self._getFacade()
         obj = facade._getObject(uid)
         # can't delete the default dashboard
-        if obj.id == "default":
+        if obj.getPrimaryId() == "/zport/dmd/ZenUsers/dashboards/default":
             return
         result = facade.deleteObject(uid)
         audit('UI.Dashboard.Remove', uid)

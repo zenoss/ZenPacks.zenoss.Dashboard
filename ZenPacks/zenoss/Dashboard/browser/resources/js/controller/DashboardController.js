@@ -157,7 +157,7 @@
                     title: _t('Delete Dashboard'),
                     buttons: [{
                         xtype: 'DialogButton',
-                        text: _t('Cancel')
+                        text: _t('Close')
                     }]
                 }).show();
                 return;
@@ -165,8 +165,9 @@
 
             // prompt them to delete the dashboard
             new Zenoss.dialog.SimpleMessageDialog({
-                message: Ext.String.format(_t("Are you sure you want to delete the dashboard: {0} ?"), dashboard.get('id')),
+                message: Ext.String.format(_t("Are you sure you want to delete the dashboard, {0} ?"), dashboard.get('id')),
                 title: _t('Delete Dashboard'),
+                width: 350,
                 buttons: [{
                     xtype: 'DialogButton',
                     text: _t('OK'),

@@ -152,7 +152,7 @@
 
             // update the refresh interval
             if (config.refresh && config.refresh != this.refresh) {
-                this.refreshTask.restart(config.refreshInterval * 1000);
+                this.refreshTask.interval = config.refreshInterval * 1000;
             }
 
             // by default apply all the config properties to this object
@@ -311,7 +311,7 @@
         siteUrl: Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL,
         initComponent: function(){
 
-            // for the default show specific to this product
+            // for the default show specific welcome to this product and version
             if (this.siteUrl === Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL) {
                 this.siteUrl += '?v=' + Zenoss.env.ZENOSS_VERSION + '&p=' + Zenoss.env.ZENOSS_PRODUCT;
             }
@@ -753,7 +753,6 @@
                 text: _t('Add'),
                 handler: function(btn) {
                     var combo = btn.up('form').down('combo[itemId="organizerCombo"]');
-                    console.log(combo.getValue());
                     me.uids.push(combo.getValue());
                     var grid = me.down('grid');
                     grid.getStore().setBaseParam('uids', me.uids);
@@ -866,15 +865,13 @@
             Zenoss.remote.DeviceRouter.getInfo({
                 uid: '/zport/dmd/Devices',
                 keys: ['events']
-            }, this.loadData, this);
+            }, Ext.bind(this.loadData, this));
         },
         loadData: function(response) {
             if (!response.success) {
                 return;
             }
-            if (!this.down('chart')){
-                console.log(this);
-            }
+
             var store = this.down('chart').getStore(), data = [],
                 types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'];
             Ext.Array.each(types, function(type) {
