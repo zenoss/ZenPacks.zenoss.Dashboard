@@ -15,7 +15,7 @@
 
     <browser:page
         template="templates/dashboard.pt"
-        name="newDashboard"
+        name="Dashboard"
         for="Products.ZenModel.interfaces.IDataRoot"
         permission="zenoss.View"
         />
@@ -29,27 +29,18 @@
         permission="zope2.Public"
         />
 
-	<!-- Europa only portlets, they rely on central query so they wont
-	     work on 4.x. Use a conditional so the dashboard will still work on 4.x though-->
-	<browser:viewlet
+    <!-- Europa only portlets, they rely on central query so they wont
+         work on 4.x. Use a conditional so the dashboard will still work on 4.x though-->
+    <browser:viewlet
         name="js-dashboard-europa-portlets"
         paths="/++resource++dashboard/js/europaportlets.js"
-		zcml:condition="installed Products.Zuul.infos.metricserver"
+        zcml:condition="installed Products.Zuul.infos.metricserver"
         weight="11"
         manager="Products.ZenUI3.browser.interfaces.IJavaScriptSrcManager"
         class="Products.ZenUI3.browser.javascript.JavaScriptSrcBundleViewlet"
         permission="zope2.Public"
         />
-	
-    <browser:viewlet
-        name="New Dashboard"
-        url="/zport/dmd/newDashboard"
-        weight="2"
-        parentItem="Dashboard"
-        manager="Products.ZenUI3.navigation.interfaces.ISecondaryNavigationMenu"
-        class="Products.ZenUI3.navigation.menuitem.SecondaryNavigationMenuItem"
-        permission="zenoss.View"
-        layer="Products.ZenUI3.navigation.interfaces.IZenossNav"
-        />
+
+
 
 </configure>

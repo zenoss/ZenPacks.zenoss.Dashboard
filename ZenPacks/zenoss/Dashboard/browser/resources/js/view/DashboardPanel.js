@@ -402,10 +402,12 @@
                         listeners: {
                             afterrender: function(combo) {
                                 combo.getStore().on('load', function(){
+                                    var savedValue = combo.getValue(), idx, recordSelected;
+                                    idx = combo.getStore().findExact('uid', combo.getValue());
                                     // if we don't have anything set by the "state" of the combo
                                     // then go ahead and force select the first item
-                                    if (!combo.getValue()) {
-                                        var recordSelected = combo.getStore().getAt(0);
+                                    if (!combo.getValue() || idx == -1) {
+                                        recordSelected = combo.getStore().getAt(0);
                                         combo.setValue(recordSelected.get('uid'));
                                     }
                                     // this actually renders the dashboard

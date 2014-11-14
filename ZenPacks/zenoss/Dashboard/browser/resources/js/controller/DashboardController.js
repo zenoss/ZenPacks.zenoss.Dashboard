@@ -233,7 +233,7 @@
          **/
         getCurrentDashboardState: function() {
             var panel = this.getDashboardPanel(),
-                state = [], i, j, portlets, portlet, items=[],
+                state = [], i, j, portlets, portlet, items=[], column,
                 columns = panel.query('portalcolumn');
             for (i=0; i< columns.length; i++) {
                 column = columns[i];
@@ -271,14 +271,34 @@
                     columns.push({
                         id: 'col-' + i.toString(),
                         items: []
-                    })
+                    });
                 }
             }
-
+            this.stripRemovedPortlets(columns);
             Ext.suspendLayouts();
             panel.removeAll();
             panel.add(columns);
             Ext.resumeLayouts(true);
+        },
+        /**
+         * If the portlet was removed then strip it from the state. Otherwise the
+         * dashboard will render as blank.
+         **/
+        stripRemovedPortlets: function(columns) {
+            Ext.Array.each(columns, function(column){
+                var i =0, alias = "";
+                if (!column.items) {
+                    return;
+                }
+                // check to make sure the "xtype" of each item in the column is registered
+                // if not remove it
+                for (i=0; i < column.items.length; i++ ) {
+                    alias = "widget." +  column.items[i].xtype;
+                    if (Ext.isEmpty(Ext.ClassManager.getByAlias(alias))) {
+                        delete column.items[i];
+                    }
+                }
+            });
         },
         /**
          * This happens when the saved state of the portlet config
@@ -287,13 +307,13 @@
         movePortletsToColumns: function(columns, columnLength) {
             var portlets = [], i, newColumns=[];
             Ext.each(columns, function(col){
-                portlets = portlets.concat(col.items)
+                portlets = portlets.concat(col.items);
             });
             for (i=0; i<columnLength; i++) {
                 newColumns.push({
                     id: 'col-' + i.toString(),
                     items: []
-                })
+                });
             }
             i=0;
             Ext.each(portlets, function(portlet){

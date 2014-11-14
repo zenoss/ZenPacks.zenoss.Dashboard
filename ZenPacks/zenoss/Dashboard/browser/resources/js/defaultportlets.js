@@ -207,7 +207,6 @@
         }
     });
 
-
     /**
      * @class Zenoss.Dashboard.stores.Organizer
      * @extend Zenoss.DirectStore
