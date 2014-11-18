@@ -62,8 +62,19 @@ class ZenPack(ZenPackBase):
     def remove(self, dmd, leaveObjects=False):
         super(ZenPack, self).remove(dmd, leaveObjects)
         if not leaveObjects:
-            self._removeDashboards()
+            self._removeDashboards(dmd)
 
-    def _removeDashboards():
-        # TODO: actually remove the dashboards
-        pass
+    def _removeDashboards(self, dmd):
+        # manager
+        dmd.ZenUsers._delObject('dashboards')
+        # users
+        settings = dmd.ZenUsers.getAllUserSettings()
+        log.info("Removing dashboard relationships on %s users ", len(settings))
+        for setting in settings:
+            setting._delObject('dashboards')
+
+        # groups
+        groups = dmd.ZenUsers.getAllGroupSettings()
+        log.info("Removing dashboard relationships on %s User Groups ", len(groups))
+        for group in groups:
+            group._delObject('dashboards')
