@@ -1135,4 +1135,67 @@
         }
     });
 
+
+
+    /**
+     * Grid view of events (a mini-event console)
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.EventViewPortlet', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.eventviewportlet',
+        height: 400,
+        title: 'Event View',
+        stateId: "",
+        initComponent: function(){
+            this.stateId = this.title + "_STATE";
+            var consoleId = Ext.id(),
+                columns = this.stripIds(Zenoss.env.COLUMN_DEFINITIONS);
+            Ext.apply(this, {
+                items: [
+                    Ext.create('Zenoss.events.Grid', {
+                        id: consoleId,
+                        defaultFilters: {
+                            severity: [Zenoss.SEVERITY_CRITICAL, Zenoss.SEVERITY_ERROR, Zenoss.SEVERITY_WARNING, Zenoss.SEVERITY_INFO],
+                            eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
+                            // _managed_objects is a global function sent from the server, see ZenUI3/security/security.py
+                            tags: _managed_objects()
+                        },
+                        stateId: this.stateId,
+                        stateful: true,
+                        columns: columns,
+                        enableTextSelection: true,
+                        store: Ext.create('Zenoss.events.Store', {}),
+                        selModel: Ext.create('Zenoss.EventPanelSelectionModel', {
+                            gridId: consoleId
+                        })
+                    })
+                ]
+            });
+
+            this.callParent(arguments);
+        },
+        stripIds: function(columns) {
+            var cols = Ext.clone(columns);
+            Ext.Array.each(cols, function(col) {
+                delete col.id;
+            });
+            return cols;
+        },
+        // no user defineable configuration for now
+        getConfig: function() {
+            return {
+                stateId: this.stateId
+            };
+        },
+        applyConfig: function(config) {
+            this.callParent([config]);
+        },
+        getCustomConfigFields: function() {
+            var fields = [];
+            return fields;
+        }
+    });
+
+
+
 }());
