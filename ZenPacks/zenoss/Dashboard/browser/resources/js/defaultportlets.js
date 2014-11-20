@@ -1149,7 +1149,8 @@
         initComponent: function(){
             this.stateId = this.title + "_STATE";
             var consoleId = Ext.id(),
-                columns = this.stripIds(Zenoss.env.COLUMN_DEFINITIONS);
+                columns = this.stripIds(Zenoss.env.COLUMN_DEFINITIONS),
+                me = this;
             Ext.apply(this, {
                 items: [
                     Ext.create('Zenoss.events.Grid', {
@@ -1164,7 +1165,14 @@
                         stateful: true,
                         columns: columns,
                         enableTextSelection: true,
-                        store: Ext.create('Zenoss.events.Store', {}),
+                        store: Ext.create('Zenoss.events.Store', {
+                            listeners: {
+                                load: function(store) {
+                                    // work around a bug where the total wasn't displayed
+                                    me.down('livegridinfopanel')._doOnScroll();
+                                }
+                            }
+                        }),
                         selModel: Ext.create('Zenoss.EventPanelSelectionModel', {
                             gridId: consoleId
                         })
