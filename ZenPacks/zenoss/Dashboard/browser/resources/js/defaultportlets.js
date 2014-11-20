@@ -791,6 +791,9 @@
         alias: 'widget.openeventsportlet',
         height: 350,
         title: 'Open Events Chart',
+        eventClass: "/",
+        summaryFilter: "",
+        daysPast: 3,
         initComponent: function(){
             Ext.applyIf(this, {
                 items:[{
@@ -807,6 +810,7 @@
                         type: 'Numeric',
                         position: 'left',
                         fields: ['value'],
+                        minorTickSteps: 0,
                         title: _t('Open Events')
                     },{
                         type: 'Category',
@@ -861,22 +865,86 @@
         },
         fetchEvents: function() {
             // gets all the open events for now
-            Zenoss.remote.DeviceRouter.getInfo({
-                uid: '/zport/dmd/Devices',
-                keys: ['events']
-            }, Ext.bind(this.loadData, this));
+            var end = new Date(), start = new Date(), params;
+            start.setDate(start.getDate() - this.daysPast);
+
+            params = {
+                start: 0,
+                limit: 500,
+                keys: ['severity'],
+                params: {
+                    eventClass: this.eventClass,
+                    // format a time range Zep can understand
+                    firstTime: Ext.Date.format(start, Zenoss.date.ISO8601Long) + "/" + Ext.Date.format(end, Zenoss.date.ISO8601Long),
+                    summary: this.summaryFilter
+                }
+            };
+            Zenoss.remote.EventsRouter.query(params, this.loadData, this);
         },
         loadData: function(response) {
             if (!response.success) {
                 return;
             }
 
-            var store = this.down('chart').getStore(), data = [],
-                types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'];
+            // iterate through the events we get back from the server so we can
+            // build a store for the chart. The format ends up looking like:
+            // [["Critical", 100], ["Error", 1], ...]
+            var store = this.down('chart').getStore(), data = [], events = response.events,
+                types = ['Critical', 'Error', 'Warning', 'Info', 'Debug'], i, counts = {
+                    'critical': 0,
+                    'error': 0,
+                    'warning': 0,
+                    'info': 0,
+                    'debug': 0
+                };
+            for (i=0;i<events.length;i++) {
+                counts[Zenoss.util.convertSeverity(events[i].severity)]++;
+            }
+
             Ext.Array.each(types, function(type) {
-                data.push([type, response.data.events[type.toLowerCase()].count]);
+                data.push([type, counts[type.toLowerCase()]]);
             });
             store.loadData(data);
+        },
+        getConfig: function() {
+            return {
+                eventClass: this.eventClass,
+                summaryFilter: this.summaryFilter,
+                daysPast: this.daysPast
+            };
+        },
+        applyConfig: function(config) {
+            var refresh = false;
+            if (config.eventClass != this.eventClass || config.summaryFilter != this.summaryFilter || config.daysPast != this.daysPast) {
+                refresh = true;
+            }
+            this.callParent([config]);
+            if (refresh) {
+                this.fetchEvents();
+            }
+        },
+        getCustomConfigFields: function() {
+            var fields = [{
+                xtype: 'eventclass',
+                fieldLabel: _t('Event Class'),
+                name: 'eventClass',
+                forceSelection: false,
+                autoSelect: false,
+                value: this.eventClass
+            },{
+                xtype: 'textfield',
+                name: 'summaryFilter',
+                fieldLabel: _t('Summary Filter'),
+                value: this.summaryFilter
+            }, {
+                xtype: 'numberfield',
+                minValue: 1,
+                maxValue: 30,
+                fieldLabel: _t('Number of past days to show events for'),
+                name: 'daysPast',
+                value: this.daysPast
+            }];
+            return fields;
         }
     });
 
