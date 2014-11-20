@@ -1009,7 +1009,7 @@
             this.nodes = [];
             this.links = [];
             this.force = d3.layout.force()
-                .charge(-2000)
+                .charge(-1000)
                 .theta(0)
                 .linkDistance(125)
                 .size([width, height])
@@ -1057,12 +1057,16 @@
                     .attr("class", function(d){ return "node " + d.id; })
                     .call(self.force.drag);
                 nodeContainer.append("rect")
-                    .attr("width", nodeWidth)
+                    .attr("width", function(d) {
+                        // make the box wider for longer names
+                        return Math.max(d.id.length * 8, 125);
+                    })
                     .attr("height", nodeHeight)
                     .attr("transform", "translate(" + -nodeWidth/2 + ", " + -nodeHeight/2 + ")")
                     .attr("rx", 10)
                     .attr("ry", 10)
                     .attr("stroke", function(d){ return d.color; });
+
                 nodeContainer.append("text")
                     .text(function(d){ return d.id; })
                     .attr("dx", -30)
