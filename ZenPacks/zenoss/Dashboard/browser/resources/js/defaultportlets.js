@@ -826,6 +826,25 @@
                         xPadding: 10,
                         yPadding: 2,
                         highlight: true,
+                        listeners: {
+                            itemmousedown: function(obj) {
+                                var sevs = ['clear', 'debug', 'info', 'warning', 'error', 'critical'],
+                                    severity = obj.storeItem.data.name, idx=0,
+                                    link = "/zport/dmd/Events/evconsole?eventClass={0}&severity={1}&summary={2}",
+                                    formatted;
+                                // find the number for the severity
+                                Ext.Array.each(sevs, function(sev) {
+                                    if (sev.toLowerCase() == severity.toLowerCase()) {
+                                        return false;
+                                    }
+                                    idx++;
+                                    return true;
+                                });
+                                formatted = Ext.String.format(link, this.eventClass, idx, this.summaryFilter);
+                                window.open(formatted,'_blank');
+                            },
+                            scope: this
+                        },
                         renderer: function(sprite, record, attr, index, store) {
                             var colors = ["#d60000",  "#ff9711", "#fbd13d", "#0472b8", "#CACACA"];
 
