@@ -1174,6 +1174,9 @@
 
             this.callParent(arguments);
         },
+        onRefresh: function() {
+            this.items.first().getStore().load();
+        },
         stripIds: function(columns) {
             var cols = Ext.clone(columns);
             Ext.Array.each(cols, function(col) {
