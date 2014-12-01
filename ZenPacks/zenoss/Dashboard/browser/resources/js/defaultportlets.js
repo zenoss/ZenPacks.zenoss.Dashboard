@@ -1166,7 +1166,9 @@
         title: 'Event View',
         stateId: "",
         initComponent: function(){
-            this.stateId = this.title + "_STATE";
+            if (!this.stateId) {
+                this.stateId = Ext.id();
+            }
             var consoleId = Ext.id(),
                 columns = this.stripIds(Zenoss.env.COLUMN_DEFINITIONS),
                 me = this;
