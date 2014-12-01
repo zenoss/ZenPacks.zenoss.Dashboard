@@ -50,6 +50,10 @@ class DashboardRouter(DirectRouter):
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
     def saveDashboardState(self, uid, state):
+        """
+        Updates the state attribute of the dashboard. This is called everytime a portlet is
+        either dragged or resized.
+        """
         facade = self._getFacade()
         result = facade.saveDashboardState(uid, state)
         audit('UI.Dashboard.Edit', state=state)

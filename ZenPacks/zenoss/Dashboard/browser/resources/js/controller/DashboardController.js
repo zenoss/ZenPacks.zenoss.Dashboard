@@ -217,7 +217,7 @@
                 config: portlet.getConfig(),
                 xtype: portlet.getXType(),
                 height: portlet.getHeight() || 100
-            }
+            };
             return portletProperties;
         },
         addPortlet: function(portletConfig) {

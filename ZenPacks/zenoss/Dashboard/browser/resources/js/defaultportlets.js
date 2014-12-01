@@ -250,7 +250,7 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', this.baselocation, this.pollingrate)
+            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', this.baselocation, this.pollingrate);
         },
         getConfig: function() {
             return {
@@ -683,7 +683,7 @@
                             var store = grid.getStore(), record = store.getAt(rowIndex);
                             // filter out the remove uid
                             me.uids = Zenoss.util.filter(me.uids, function(uid) {
-                                return uid != record.get('uid')
+                                return uid != record.get('uid');
                             });
                             // update the store params
                             store.setBaseParam('uids', me.uids);

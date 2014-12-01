@@ -3,7 +3,7 @@ import Globals
 import logging
 from Products.CMFCore.DirectoryView import registerDirectory
 from Products.ZenRelations.RelSchema import ToOne, ToManyCont
-from Products.ZenModel.UserSettings import UserSettings, UserSettingsManager, GroupSettings
+from Products.ZenModel.UserSettings import UserSettings, UserSettingsManager
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 log = logging.getLogger('zen.dashboard')
 

@@ -1,7 +1,7 @@
 /**
- * @class Ext.app.PortalColumn
+ * @class Zenoss.Dashboard.view.PortalColumn
  * @extends Ext.container.Container
- * A layout column class used internally be {@link Ext.app.PortalPanel}.
+ * A layout column class
  */
 Ext.define('Zenoss.Dashboard.view.PortalColumn', {
     extend: 'Ext.container.Container',

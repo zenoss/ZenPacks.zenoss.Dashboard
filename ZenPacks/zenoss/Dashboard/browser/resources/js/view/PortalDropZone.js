@@ -1,5 +1,5 @@
 /**
- * @class ExtMVC.view.app.PortalDropZone
+ * @class Zenoss.Dashboard.view.PortalDropZone
  * @extends Ext.dd.DropTarget
  * Internal class that manages drag/drop for {@link Ext.app.PortalPanel}.
  */

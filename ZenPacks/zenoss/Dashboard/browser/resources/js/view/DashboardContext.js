@@ -47,7 +47,7 @@
                         name: 'uid',
                         itemId: 'usergroup',
                         checked: context == "user_groups",
-                        boxLabel: _t('User Group'),
+                        boxLabel: _t('User Group')
 
                     }, {
                         xtype: 'container',

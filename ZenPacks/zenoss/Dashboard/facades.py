@@ -189,8 +189,7 @@ class DashboardFacade(ZuulFacade):
     def getDeviceClassGraphDefinition(self, deviceClassName, graphPointsUids):
         deviceClass = self._dmd.Devices.getOrganizer(deviceClassName)
         # grab the first then so we don't clutter the graph.
-        # TODO: Either allow them to select specific devices or do something
-        # smarter about which devices to show (like sort by events etc)
+        # TODO: Show the nth top or bottom devices based on a query to the metric service
         devices = deviceClass.devices()[:10]
         results = []
         for uid in graphPointsUids:
