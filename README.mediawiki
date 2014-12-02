@@ -12,27 +12,28 @@ edit_dashboard.png
 
 By default dashboards have three levels of visibility
 
-1. Only the owner can view
-2. Anyone in a specified group
-3. Global
+# Only the owner can view
+# Anyone in a specified group
+# Global
 
 This allows a dashboard to private while you are working on it and
 then published once it is done. The zenpack adds the dashboard
 relationship to the following objects
 
-1. The UserSettingsManager  - for all global dashboards
-2. UserSettings - for private dashboards
-3. GroupSettings - for dashboards that are shared with a user group
+# The UserSettingsManager  - for all global dashboards
+# UserSettings - for private dashboards
+# GroupSettings - for dashboards that are shared with a user group
+
 
 When you change the visibility of a dashboard object it is moved from
-one relationship to another. For instance if you have a dashboard
-called "Test" that is private its primary path will be
-"/zport/dmd/ZenUsers/YOURUSERID/dashboards/Test". If you promote it to
-be global its new primary path will be
+one relationship to another. 
+
+For instance if you have a dashboard called "Test" that is private its primary path will be
+"/zport/dmd/ZenUsers/YOURUSERID/dashboards/Test". 
+If you promote it to be global its new primary path will be
 "/zport/dmd/ZenUsers/dashboards/Test". There is a unique name
 constraint on the different relationship. So you can't have two global
 dashboards with the same name.
-
 
 == Portlets ==
 
