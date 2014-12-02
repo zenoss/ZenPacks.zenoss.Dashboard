@@ -241,7 +241,7 @@
 
             Ext.apply(this, {
                 items: [{
-                    xtype: 'iframe',
+                    xtype: 'uxiframe',
                     ref: 'mapIframe',
                     src: this.getIFrameSource()
                 }]
@@ -265,7 +265,7 @@
             }
         },
         onRefresh: function() {
-            this.down('iframe').load(this.getIFrameSource());
+            this.down('uxiframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
@@ -316,7 +316,7 @@
             }
             Ext.apply(this, {
                 items: [{
-                    xtype: 'iframe',
+                    xtype: 'uxiframe',
                     ref: 'mapIframe',
                     src: this.getIFrameSource()
                 }]
@@ -338,7 +338,7 @@
             }
         },
         onRefresh: function() {
-            this.down('iframe').load(this.getIFrameSource());
+            this.down('uxiframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var fields = [{
@@ -877,7 +877,7 @@
 
             });
             this.callParent(arguments);
-            this.fetchEvents();
+            this.on('afterrender', this.fetchEvents, this, {single: true});
         },
         onRefresh: function() {
             this.fetchEvents();
