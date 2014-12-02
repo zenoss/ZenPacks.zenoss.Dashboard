@@ -1,0 +1,132 @@
+This ZenPack adds a new implementation of the Dashboard page. Any user can define any number of dashboards that can either be shared globally or with a specific user group.
+
+== Gallery ==
+<gallery widths=250px heights=127px>
+default_dashboard.png
+separate_dashboard.png
+add_portlet.png
+edit_dashboard.png
+</gallery>
+
+=== Sharing Dashboards  ===
+
+By default dashboards have three levels of visibility
+
+1. Only the owner can view
+2. Anyone in a specified group
+3. Global
+
+This allows a dashboard to private while you are working on it and
+then published once it is done. The zenpack adds the dashboard
+relationship to the following objects
+
+1. The UserSettingsManager  - for all global dashboards
+2. UserSettings - for private dashboards
+3. GroupSettings - for dashboards that are shared with a user group
+
+When you change the visibility of a dashboard object it is moved from
+one relationship to another. For instance if you have a dashboard
+called "Test" that is private its primary path will be
+"/zport/dmd/ZenUsers/YOURUSERID/dashboards/Test". If you promote it to
+be global its new primary path will be
+"/zport/dmd/ZenUsers/dashboards/Test". There is a unique name
+constraint on the different relationship. So you can't have two global
+dashboards with the same name.
+
+
+== Portlets ==
+
+This zenpack comes with the default portlets defined.
+
+* Site Window - Allows an iframe to be displayed on the dashboard
+* Device Chart (only available on 5.x) - Displays a chart with the devices from a specific device class and graph point.
+* Device Issues - Shows devices which currently have events
+* Production State - Shows which devices are in specified production states
+* Network Map - D3 forced layout view of the network map.
+* Open Events Chart - Shows open events grouped into severity
+* Google Maps - select a location and the map will show the event severity for the sub locations
+* Plus others...
+
+=== Permissions ===
+
+Right now there are no "owner level" permissions so any other use can
+edit the dashboard if they have the "Change Device" permission. A user
+can add a dashboard with the "Add DMD Objects" and remove a dashboard
+if they have the "Delete Objects" permission. These are global level
+roles, dashboards don't exist in a permissionable context.
+
+These are checked both on the client and server. All operations on dashboards are audited if you have the Audit zenpack installed.
+
+=== Writing a new Portlet ===
+
+Writing portlets is done entirely in Javascript using ExtJS. A portlets consist of one ExtJs class that descends from "Zenoss.Dashboard.view.Portlet". Here is an example portlet definition
+
+<syntaxhighlight lang="javascript">
+    /**
+     * A simple portlet that lets users define custom HTML to be displayed
+     * on the application dashboard. This will execute any javascript that is
+     * written.
+     **/
+    //1. The portlet must exists on the Zenoss.Dashboard.portlets namespace. Everything on this namespace is assumed to be a portlet.
+    Ext.define('Zenoss.Dashboard.portlets.HTMLPortlet', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        //2. An alias is required as that is what is used to instantiated the portlet when the dashboard is rendered
+        alias: 'widget.htmlportlet',
+        height: 100,
+        //3. The default title is what will show up on the dropdown of available Portlets
+        title: 'HTML Portlet',
+
+        //4. All default config properties of portlets should be defined on the class
+        content: "<h1>Blank HTMLPortlet</h1>",
+        initComponent: function(){
+
+            Ext.apply(this, {
+                html: this.content
+            });
+
+            this.callParent(arguments);
+        },
+        //5. getConfig Is called when serializing portlets and returns what options are saved on the portlet.
+        //   height and refresh rate are included from the parent class
+        getConfig: function() {
+            return {
+                html: this.content
+            };
+        },
+        //6. applyConfig Where you apply the configuration to the portlet. This can include updating stores and content.
+        applyConfig: function(config) {
+            if (config.html && config.html != this.content) {
+                this.content = config.html;
+                this.update(config.html, true);
+            }
+            this.callParent([config]);
+        },
+        //7. Template method for what happens when a portlet is asked to be refreshed.
+        onRefresh: function() {
+
+        },
+        //8. Any custom configuration fields for your portlet are defined here. The caller expects an array to be returned.
+        getCustomConfigFields: function() {
+            var fields = [{
+                xtype: 'textarea',
+                fieldLabel: _t('Content'),
+                name: 'html',
+                value: this.content,
+                allowBlank: false,
+                height: 100,
+                width: 200
+            }];
+            return fields;
+        }
+    });
+</syntaxhighlight>
+
+== Known Issues ==
+
+The following issues have been identified in the most recent release of this ZenPack.
+1. Right now the names aren't validated to be unique on the new context when changing the visibility of the dashboard
+
+== Changes ==
+
+;1.0.0
+* Initial Release

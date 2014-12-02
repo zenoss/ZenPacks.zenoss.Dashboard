@@ -1,0 +1,29 @@
+
+<tal:block metal:use-macro="context/page_macros/base-new">
+
+<tal:block metal:fill-slot="title">Dashboard</tal:block>
+
+<tal:block metal:fill-slot="center_panel_content">
+
+</tal:block>
+
+<tal:block metal:fill-slot="script_layout">
+
+  <script
+      tal:define="templateFreeUrl python:here.absolute_url_path()"
+      tal:content="string:
+
+    Zenoss.env.ZENOSS_VERSION = '${here/dmd/getZenossVersionShort}';
+    Zenoss.env.ZENOSS_PRODUCT = '${here/dmd/productName | string:core}';
+
+">s</script>
+<link rel="stylesheet" type="text/css" href="++resource++dashboard/css/portal.css">
+<link rel="stylesheet" type="text/css" href="++resource++dashboard/css/networkmap.css">
+<script src="/++resource++dashboard/js/lib/d3.v3.min.js" type="text/javascript"></script>
+<script
+    tal:attributes="src python: context.zport.getVersionedResourcePath('/++resource++dashboard/js/app.js')"
+>
+</script>
+
+</tal:block>
+</tal:block>

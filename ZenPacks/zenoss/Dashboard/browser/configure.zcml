@@ -1,0 +1,46 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser = "http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    >
+
+    <!-- API: Info Adapters -->
+
+    <!-- Browser Resources -->
+    <browser:resourceDirectory
+        name="dashboard"
+        directory="resources"
+        />
+
+    <browser:page
+        template="templates/dashboard.pt"
+        name="Dashboard"
+        for="Products.ZenModel.interfaces.IDataRoot"
+        permission="zenoss.View"
+        />
+
+    <browser:viewlet
+        name="js-dashboard-default-portlets"
+        paths="/++resource++dashboard/js/defaultportlets.js"
+        weight="10"
+        manager="Products.ZenUI3.browser.interfaces.IJavaScriptSrcManager"
+        class="Products.ZenUI3.browser.javascript.JavaScriptSrcBundleViewlet"
+        permission="zope2.Public"
+        />
+
+    <!-- Europa only portlets, they rely on central query so they wont
+         work on 4.x. Use a conditional so the dashboard will still work on 4.x though-->
+    <browser:viewlet
+        name="js-dashboard-europa-portlets"
+        paths="/++resource++dashboard/js/europaportlets.js"
+        zcml:condition="installed Products.Zuul.infos.metricserver"
+        weight="11"
+        manager="Products.ZenUI3.browser.interfaces.IJavaScriptSrcManager"
+        class="Products.ZenUI3.browser.javascript.JavaScriptSrcBundleViewlet"
+        permission="zope2.Public"
+        />
+
+
+
+</configure>
