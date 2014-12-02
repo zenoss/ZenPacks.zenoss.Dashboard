@@ -118,7 +118,8 @@
                 xtype: 'numberfield',
                 name: 'height',
                 fieldLabel: _t('Height'),
-                value: this.getEl() ? this.getHeight() : this.height
+                value: this.getEl() ? this.getHeight() : this.height,
+                minValue: 10
             }, {
                 xtype: 'numberfield',
                 name: 'refreshInterval',
@@ -126,7 +127,7 @@
                 value: this.refreshInterval,
                 // some of the portlets might be expensive
                 // so keep the min refresh sane
-                minValue: 60
+                minValue: 5
             }];
 
             return fields.concat(this.getCustomConfigFields());
