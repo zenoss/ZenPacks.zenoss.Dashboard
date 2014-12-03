@@ -885,7 +885,7 @@
         },
         fetchEvents: function() {
             // gets all the open events for now
-            var end = new Date(), start = new Date(), params;
+            var start = new Date(), params;
             start.setDate(start.getDate() - this.daysPast);
 
             params = {
@@ -894,8 +894,9 @@
                 keys: ['severity'],
                 params: {
                     eventClass: this.eventClass,
+                    eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
                     // format a time range Zep can understand
-                    firstTime: Ext.Date.format(start, Zenoss.date.ISO8601Long) + "/" + Ext.Date.format(end, Zenoss.date.ISO8601Long),
+                    lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
                     summary: this.summaryFilter
                 }
             };
