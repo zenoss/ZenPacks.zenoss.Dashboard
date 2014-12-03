@@ -1,4 +1,4 @@
-A new implementation of the Dashboard page.
+This ZenPack introduces a new widget framework for creating portlets and sharing dashboards. Users may define any number of portlets and dashboards, which may be shared globally or with specific groups.
 
 == Gallery ==
 <gallery widths=250px heights=127px>
