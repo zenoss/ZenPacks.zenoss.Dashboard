@@ -1,4 +1,4 @@
-This ZenPack adds a new implementation of the Dashboard page. Any user can define any number of dashboards that can either be shared globally or with a specific user group.
+A new implementation of the Dashboard page.
 
 == Gallery ==
 <gallery widths=250px heights=127px>
