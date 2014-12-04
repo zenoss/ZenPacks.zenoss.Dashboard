@@ -216,7 +216,8 @@
                 title: portlet.getTitle(),
                 config: portlet.getConfig(),
                 xtype: portlet.getXType(),
-                height: portlet.getHeight() || 100
+                height: portlet.height || 100,
+                collapsed: portlet.getCollapsed()
             };
             return portletProperties;
         },
