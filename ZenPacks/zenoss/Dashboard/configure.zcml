@@ -17,6 +17,8 @@
            for="*"
            />
 
+  <!-- defines the direct router directive -->
+  <include package="Products.ZenUtils.extdirect.zope" file="meta.zcml"/>
   <browser:directRouter
         name="dashboard_router"
         for="*"
