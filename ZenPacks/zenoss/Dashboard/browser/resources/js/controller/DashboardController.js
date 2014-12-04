@@ -214,6 +214,7 @@
         extractPortlet: function(portlet) {
             var portletProperties = {
                 title: portlet.getTitle(),
+                refreshInterval: portlet.refreshInterval,
                 config: portlet.getConfig(),
                 xtype: portlet.getXType(),
                 height: portlet.height || 100,
