@@ -38,7 +38,7 @@ class DashboardFacade(ZuulFacade):
             obj = self._getObject(uid)
         return obj
 
-    def addDashboard(self, newId, uid, columns):
+    def addDashboard(self, newId, uid, columns, state=None):
         """
         newId is the name of the dashboard
         uid is the context on which the dashboard appears. ZenUsers, UserSetings or GroupSettings
@@ -48,6 +48,7 @@ class DashboardFacade(ZuulFacade):
         d.columns = columns
         user = self._dmd.ZenUsers.getUserSettings()
         d.owner = user.id
+        d.state = state
         obj.dashboards._setObject(newId, d)
 
     def saveDashboard(self, data):

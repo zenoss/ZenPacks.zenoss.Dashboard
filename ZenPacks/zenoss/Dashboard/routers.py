@@ -25,9 +25,9 @@ class DashboardRouter(DirectRouter):
         return DirectResponse.succeed(data=Zuul.marshal(results))
 
     @require('Add DMD Objects')
-    def addDashboard(self, newId, uid, columns):
+    def addDashboard(self, newId, uid, columns, state=None):
         facade = self._getFacade()
-        result = facade.addDashboard(newId, uid, columns)
+        result = facade.addDashboard(newId, uid, columns, state)
         audit('UI.Dashboard.Add', uid, newId=newId)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 

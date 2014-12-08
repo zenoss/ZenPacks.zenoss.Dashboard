@@ -903,7 +903,8 @@
             Zenoss.remote.EventsRouter.query(params, this.loadData, this);
         },
         loadData: function(response) {
-            if (!response.success) {
+            // make sure the response was success and we are already rendered
+            if (!response.success || !this.down('chart')) {
                 return;
             }
 
