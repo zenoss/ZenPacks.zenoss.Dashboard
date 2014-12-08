@@ -63,7 +63,8 @@
         showEditPortletDialog: function(tool){
             var portlet = tool.up('portlet');
             var win = Ext.create('Zenoss.Dashboard.view.EditPortletDialog', {
-                portlet: portlet
+                portlet: portlet,
+                portletConfig: this.extractPortlet(portlet)
             });
 
             // save handler for the dialog
