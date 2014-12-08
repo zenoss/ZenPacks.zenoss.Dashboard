@@ -63,7 +63,8 @@
         showEditPortletDialog: function(tool){
             var portlet = tool.up('portlet');
             var win = Ext.create('Zenoss.Dashboard.view.EditPortletDialog', {
-                portlet: portlet
+                portlet: portlet,
+                portletConfig: this.extractPortlet(portlet)
             });
 
             // save handler for the dialog
@@ -214,9 +215,11 @@
         extractPortlet: function(portlet) {
             var portletProperties = {
                 title: portlet.getTitle(),
+                refreshInterval: portlet.refreshInterval,
                 config: portlet.getConfig(),
                 xtype: portlet.getXType(),
-                height: portlet.getHeight() || 100
+                height: portlet.height || 100,
+                collapsed: portlet.getCollapsed()
             };
             return portletProperties;
         },

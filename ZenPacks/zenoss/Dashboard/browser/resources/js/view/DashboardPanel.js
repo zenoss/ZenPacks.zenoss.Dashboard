@@ -174,7 +174,7 @@
                 throw "EditPortletDialog received no portlet";
             }
             var portlet = config.portlet,
-                me = this, portletConfig = portlet.initialConfig;
+                me = this, portletConfig = config.portletConfig;
             portletConfig.tools = [];
             portletConfig.draggable = false;
             Ext.applyIf(config, {

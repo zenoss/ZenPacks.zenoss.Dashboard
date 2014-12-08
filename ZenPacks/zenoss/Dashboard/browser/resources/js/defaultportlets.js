@@ -118,7 +118,8 @@
                 xtype: 'numberfield',
                 name: 'height',
                 fieldLabel: _t('Height'),
-                value: this.getEl() ? this.getHeight() : this.height
+                value: this.getEl() ? this.getHeight() : this.height,
+                minValue: 10
             }, {
                 xtype: 'numberfield',
                 name: 'refreshInterval',
@@ -126,7 +127,7 @@
                 value: this.refreshInterval,
                 // some of the portlets might be expensive
                 // so keep the min refresh sane
-                minValue: 60
+                minValue: 5
             }];
 
             return fields.concat(this.getCustomConfigFields());
@@ -241,7 +242,7 @@
 
             Ext.apply(this, {
                 items: [{
-                    xtype: 'iframe',
+                    xtype: 'uxiframe',
                     ref: 'mapIframe',
                     src: this.getIFrameSource()
                 }]
@@ -265,7 +266,7 @@
             }
         },
         onRefresh: function() {
-            this.down('iframe').load(this.getIFrameSource());
+            this.down('uxiframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
@@ -316,7 +317,7 @@
             }
             Ext.apply(this, {
                 items: [{
-                    xtype: 'iframe',
+                    xtype: 'uxiframe',
                     ref: 'mapIframe',
                     src: this.getIFrameSource()
                 }]
@@ -338,7 +339,7 @@
             }
         },
         onRefresh: function() {
-            this.down('iframe').load(this.getIFrameSource());
+            this.down('uxiframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var fields = [{
@@ -877,14 +878,14 @@
 
             });
             this.callParent(arguments);
-            this.fetchEvents();
+            this.on('afterrender', this.fetchEvents, this, {single: true});
         },
         onRefresh: function() {
             this.fetchEvents();
         },
         fetchEvents: function() {
             // gets all the open events for now
-            var end = new Date(), start = new Date(), params;
+            var start = new Date(), params;
             start.setDate(start.getDate() - this.daysPast);
 
             params = {
@@ -893,8 +894,9 @@
                 keys: ['severity'],
                 params: {
                     eventClass: this.eventClass,
+                    eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
                     // format a time range Zep can understand
-                    firstTime: Ext.Date.format(start, Zenoss.date.ISO8601Long) + "/" + Ext.Date.format(end, Zenoss.date.ISO8601Long),
+                    lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
                     summary: this.summaryFilter
                 }
             };
