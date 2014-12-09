@@ -502,7 +502,7 @@
     Ext.define('Zenoss.Dashboard.portlets.DaemonProcessDown', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.daemonprocessportlet',
-        title: _t('Deamon Processes Down'),
+        title: _t('Daemon Processes Down'),
         height: 250,
         initComponent: function(){
             Ext.apply(this, {
