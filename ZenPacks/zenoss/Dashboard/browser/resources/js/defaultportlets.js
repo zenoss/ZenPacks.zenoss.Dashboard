@@ -152,7 +152,7 @@
             }
 
             // update the refresh interval
-            if (config.refresh && config.refresh != this.refresh) {
+            if (config.refreshInterval && config.refreshInterval != this.refreshInterval) {
                 this.refreshTask.interval = config.refreshInterval * 1000;
             }
 
