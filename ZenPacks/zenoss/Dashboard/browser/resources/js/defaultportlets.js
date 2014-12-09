@@ -79,6 +79,11 @@
 
             this.callParent(arguments);
             this.on('afterrender', this.startRefresh, this, {single: true});
+            this.on('beforedestroy', this.destroyRefresh, this, {single:true});
+        },
+        destroyRefresh: function() {
+            Ext.TaskManager.stop(this.refreshTask);
+            delete this.refreshTask;
         },
         startRefresh: function() {
             this.refreshTask = Ext.TaskManager.start({
