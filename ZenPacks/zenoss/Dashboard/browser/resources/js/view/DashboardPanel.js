@@ -295,6 +295,11 @@
                     minValue: 1,
                     maxValue: 10,
                     value: 3
+                },{
+                    xtype: 'checkbox',
+                    itemId: 'clone',
+                    fieldLabel: Ext.String.format(_t('Clone from dashboard ({0})'), config.currentDashboard.get('id')),
+                    value: 0
                 }],
                 buttons: [{
                     xtype: 'DialogButton',
@@ -305,7 +310,8 @@
                         var params = {
                             newId: me.down('textfield').getValue(),
                             uid: me.down('dashboardcontext').getValue(),
-                            columns: me.down('numberfield').getValue()
+                            columns: me.down('numberfield').getValue(),
+                            cloneExisting: me.down('checkbox[itemId="clone"]').getValue()
                         };
 
                         me.fireEvent('newdashboard', params);

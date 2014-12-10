@@ -1,5 +1,4 @@
 This ZenPack introduces a new widget framework for creating portlets and sharing dashboards. Users may define any number of portlets and dashboards, which may be shared globally or with specific groups. 
-
 == Gallery ==
 <gallery widths=250px heights=127px>
 default_dashboard.png
@@ -9,34 +8,28 @@ edit_dashboard.png
 </gallery>
 
 == Sharing Dashboards  ==
-
 By default, a dashboard has three levels of visibility:
-
 # Owner
 # Group
 # Global
-
 These levels allow a dashboard to remain private during development, and
-then published to a wider audience upon completion. 
-
-This ZenPack adds the dashboard relationship to the following objects:
-
+then published to a wider audience upon completion. This ZenPack adds the dashboard relationship to the following objects:
 # UserSettings - private dashboards
 # GroupSettings - group dashboards
 # UserSettingsManager - global dashboards
+
 
 Changing the visibility of a dashboard object moves it from one relationship to another. 
 For example, the primary path of a private dashboard named "Test" is "/zport/dmd/ZenUsers/<USERID>/dashboards/Test". 
 Promoting the dashboard to global changes the primary path to "/zport/dmd/ZenUsers/dashboards/Test". 
 
-Note: Dashboard names must be unique in each relationship context.
+
+'''Note''': Dashboard names must be unique in each relationship context.
 You can not promote a private dashboard named "Test" to global if
 a global dashboard named "Test" already exists.
 
 == Portlets ==
-
 The following, default portlets are defined by this ZenPack:
-
 * Site Window - Displays an iframe on the dashboard
 * Device Chart (5.x only) - Displays a chart with devices from a specific device class and graph point
 * Device Issues - Shows devices which currently have events
@@ -47,7 +40,6 @@ The following, default portlets are defined by this ZenPack:
 * And more...
 
 == Permissions ==
-
 * There are no owner-level permissions associated with dashboard objects. Any user may edit a dashboard if they have "Change Device" permission. 
 * Users with "Add DMD Objects" permission may add a dashboard.
 * User with "Delete Objects" permission may remove a dashboard.
@@ -69,7 +61,7 @@ Portlets are written in Javascript using ExtJS. A portlet consist of one ExtJs c
     //1. The portlet must be in the Zenoss.Dashboard.portlets namespace, in which everything is assumed to be a portlet.
     Ext.define('Zenoss.Dashboard.portlets.HTMLPortlet', {
         extend: 'Zenoss.Dashboard.view.Portlet',
-        //2. An alias (required) is used to instantiate the portlet when the dashboard is rendered
+        //2. An alias (required) is used to instantiate the portlet when the dashboard is rendered        
         alias: 'widget.htmlportlet',
         height: 100,
         //3. The default title displays on the dropdown of available Portlets
@@ -122,10 +114,18 @@ Portlets are written in Javascript using ExtJS. A portlet consist of one ExtJs c
 
 == Known Issues ==
 
+
 The following issues have been identified in the most recent release of this ZenPack.
+
+
 1. When the visibility of a dashboard is changed, the dashboard name is not checked for uniqueness in the new context.
 
-== Changes ==
 
+
+
+== Changes ==
+;1.0.1
+* Now works on IE10 and IE11
 ;1.0.0
 * Initial Release
+

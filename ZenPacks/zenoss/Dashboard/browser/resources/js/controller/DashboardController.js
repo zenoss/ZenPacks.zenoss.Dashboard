@@ -94,12 +94,19 @@
         },
         showNewDashboardDialog: function() {
             var win = Ext.create('Zenoss.Dashboard.view.AddDashboardDialog', {
+                currentDashboard: this.getCurrentDashboard()
             });
 
             // save handler for the dialog
             win.on('newdashboard', function(params) {
-                router.addDashboard(params, function(response) {
+                // save the state if the user wishes to clone the existing dashboard
+                var cloneExisting = params.cloneExisting;
+                delete params.cloneExisting;
+                if (cloneExisting) {
+                    params.state = this.getCurrentDashboardState();
+                }
 
+                router.addDashboard(params, function(response) {
                     // make sure we successfully create the dashboard before closing the dialog
                     if (response.success) {
                         win.close();

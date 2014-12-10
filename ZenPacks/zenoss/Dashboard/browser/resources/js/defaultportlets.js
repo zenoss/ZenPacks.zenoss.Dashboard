@@ -79,6 +79,11 @@
 
             this.callParent(arguments);
             this.on('afterrender', this.startRefresh, this, {single: true});
+            this.on('beforedestroy', this.destroyRefresh, this, {single:true});
+        },
+        destroyRefresh: function() {
+            Ext.TaskManager.stop(this.refreshTask);
+            delete this.refreshTask;
         },
         startRefresh: function() {
             this.refreshTask = Ext.TaskManager.start({
@@ -152,7 +157,7 @@
             }
 
             // update the refresh interval
-            if (config.refresh && config.refresh != this.refresh) {
+            if (config.refreshInterval && config.refreshInterval != this.refreshInterval) {
                 this.refreshTask.interval = config.refreshInterval * 1000;
             }
 
@@ -497,7 +502,7 @@
     Ext.define('Zenoss.Dashboard.portlets.DaemonProcessDown', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.daemonprocessportlet',
-        title: _t('Deamon Processes Down'),
+        title: _t('Daemon Processes Down'),
         height: 250,
         initComponent: function(){
             Ext.apply(this, {
@@ -903,7 +908,8 @@
             Zenoss.remote.EventsRouter.query(params, this.loadData, this);
         },
         loadData: function(response) {
-            if (!response.success) {
+            // make sure the response was success and we are already rendered
+            if (!response.success || !this.down('chart')) {
                 return;
             }
 
