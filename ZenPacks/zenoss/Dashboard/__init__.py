@@ -24,7 +24,7 @@ if os.path.isdir(skinsDir):
 
 from Products.ZenModel.ZenPack import ZenPack as ZenPackBase
 
-DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","config":{"siteUrl":"https://www2.zenoss.com/in-app-welcome?v=4.9.70&p=core"},"xtype":"sitewindowportlet","height":809}]},{"id":"col-1","items":[{"title":"Introduction To Zenoss","config":{"html":"<iframe width=\\"560\\" height=\\"315\\" src=\\"//www.youtube.com/embed/kFDCK4nUH3o\\" frameborder=\\"0\\" allowfullscreen></iframe>"},"xtype":"htmlportlet","height":400},{"title":"Device Issues","config":null,"xtype":"deviceissuesportlet","height":400}]},{"id":"col-2","items":[{"title":"Open Events Chart","config":null,"xtype":"openeventsportlet","height":400},{"title":"Google Maps","config":{"baselocation":"/zport/dmd/Locations","pollingrate":400},"xtype":"googlemapportlet","height":400}]}]'
+DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"https://www2.zenoss.com/in-app-welcome?v=4.9.70&p=core"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"/zport/dmd/Locations","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
 
 class ZenPack(ZenPackBase):
     """
@@ -54,7 +54,7 @@ class ZenPack(ZenPackBase):
         if not default:
             log.info("Creating the default Dashboard")
             dashboard = Dashboard('default')
-            dashboard.columns = 3
+            dashboard.columns = 2
             dashboard.owner = 'admin'
             dashboard.state = DEFAULT_DASHBOARD_STATE
             dmd.ZenUsers.dashboards._setObject('default', dashboard)
