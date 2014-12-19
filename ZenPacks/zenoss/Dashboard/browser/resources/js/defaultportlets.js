@@ -1140,6 +1140,7 @@
                 xtype: 'combo',
                 name: 'network',
                 queryMode: 'local',
+                editable: false,
                 store: new Zenoss.NonPaginatedStore({
                     directFn: Zenoss.remote.DashboardRouter.getNetworks,
                     root: 'data',
