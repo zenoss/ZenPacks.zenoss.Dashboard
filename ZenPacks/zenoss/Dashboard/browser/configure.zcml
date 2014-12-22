@@ -17,7 +17,7 @@
         template="templates/dashboard.pt"
         name="Dashboard"
         for="Products.ZenModel.interfaces.IDataRoot"
-        permission="zenoss.View"
+        permission="zenoss.Common"
         />
 
     <browser:viewlet
