@@ -24,6 +24,6 @@
         for="*"
         class=".routers.DashboardRouter"
         namespace="Zenoss.remote"
-        permission="zenoss.View"
+        permission="zenoss.Common"
         />
 </configure>
