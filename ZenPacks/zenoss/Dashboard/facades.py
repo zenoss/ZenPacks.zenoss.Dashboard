@@ -204,7 +204,7 @@ class DashboardFacade(ZuulFacade):
 
     def getNetworks(self):
         root = self._dmd.Networks
-        return [IInfo(child) for child in root.children()]
+        return [IInfo(network) for network in root.getSubNetworks()]
 
     def getNetworkMapData(self, uid, depth=2):
         obj = self._getObject(uid)
