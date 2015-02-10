@@ -31,7 +31,6 @@
 
         extend: 'Ext.app.Controller',
         init: function() {
-
             this.control({
                 'menuitem[itemId="newPortlet"]': {
                     click: this.showAddPortletDialog
