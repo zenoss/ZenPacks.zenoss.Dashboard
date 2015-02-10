@@ -41,6 +41,16 @@
         permission="zope2.Public"
         />
 
+    <browser:viewlet
+        name="js-dashboard-impact-portlets"
+        paths="/++resource++dashboard/js/impactportlets.js"
+        zcml:condition="installed ZenPacks.zenoss.Impact"
+        weight="11"
+        manager="Products.ZenUI3.browser.interfaces.IJavaScriptSrcManager"
+        class="Products.ZenUI3.browser.javascript.JavaScriptSrcBundleViewlet"
+        permission="zope2.Public"
+        />
+
 
 
 </configure>
