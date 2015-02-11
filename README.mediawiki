@@ -124,6 +124,10 @@ The following issues have been identified in the most recent release of this Zen
 
 
 == Changes ==
+;1.0.4
+* Now includes the Impact portlet
+;1.0.3
+* Users without a global role could not access the dashboard
 ;1.0.2
 * The refresh interval wasn't being updated properly
 ;1.0.1
