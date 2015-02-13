@@ -56,12 +56,23 @@
                         xtype: 'combo',
                         queryMode: 'local',
                         displayField: 'name',
+                        editable: false,
                         valueField: 'uid',
                         store: Ext.create('Zenoss.Dashboard.UserGroupStore', {
                             listeners: {
-                                load: function() {
+                                load: function(store) {
+                                    var combo = me.down('combo');
                                     if (context == "user_groups") {
-                                        me.down('combo').setValue(config.dashboard.get('contextUid'));
+                                        combo.setValue(config.dashboard.get('contextUid'));
+                                    } else {
+                                        var first = store.data.first();
+                                        if (first) {
+                                            combo.setValue(first);
+                                        } else {
+                                            // there are no user groups set yet, disable the field so it can't be selected
+                                            me.down('radio[itemId="usergroup"]').disable();
+                                            combo.disable();
+                                        }
                                     }
                                 }
                             }
