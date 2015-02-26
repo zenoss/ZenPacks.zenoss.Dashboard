@@ -20,6 +20,7 @@ from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 from Products.ZenModel.ZenossSecurity import ZEN_VIEW
 from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
+from Products.AdvancedQuery import MatchRegexp
 
 class IDashboardFacade(IFacade):
     """
@@ -125,7 +126,7 @@ class DashboardFacade(ZuulFacade):
 
     def getSubOrganizers(self, uid):
         results = []
-        obj = self._getObject(uid)
+        obj = self._getObject(uid or "/zport/dmd")
         searchresults = ICatalogTool(obj).search(DeviceOrganizer)
         if isinstance(obj, DeviceOrganizer):
             info = IInfo(obj)
@@ -140,6 +141,16 @@ class DashboardFacade(ZuulFacade):
             except:
                 # error unbraining the object just skip it
                 pass
+        return results
+
+    def getWatchListTargets(self, uid, query=""):
+        results = self.getSubOrganizers(uid)
+        if query:
+            results = [o for o in results if query in o.fullOrganizerName]
+            queryResults = self._dmd.Devices.deviceSearch.evalAdvancedQuery(MatchRegexp("titleOrId", ".*" + query + ".*"))
+        else:
+            queryResults = self._dmd.Devices.deviceSearch()
+        results.extend([IInfo(o.getObject()) for o in queryResults[:50]])
         return results
 
     def getDeviceIssues(self):
