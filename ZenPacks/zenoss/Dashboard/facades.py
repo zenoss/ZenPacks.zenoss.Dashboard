@@ -146,7 +146,7 @@ class DashboardFacade(ZuulFacade):
     def getWatchListTargets(self, uid, query=""):
         results = self.getSubOrganizers(uid)
         if query:
-            results = [o for o in results if query in o.fullOrganizerName]
+            results = [o for o in results if query.lower() in o.fullOrganizerName.lower()]
             queryResults = self._dmd.Devices.deviceSearch.evalAdvancedQuery(MatchRegexp("titleOrId", ".*" + query + ".*"))
         else:
             queryResults = self._dmd.Devices.deviceSearch()
