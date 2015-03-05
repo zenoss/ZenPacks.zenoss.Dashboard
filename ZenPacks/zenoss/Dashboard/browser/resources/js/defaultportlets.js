@@ -370,7 +370,12 @@
         fields: [
             {name: 'uid'},
             {name: 'name'},
-            {name: 'fullOrganizerName'},
+            {name: 'fullOrganizerName', convert: function(v, record) {
+                if (v) {
+                    return v;
+                }
+                return record.get("name");
+            }},
             {name: 'events'},
             {name: 'icon'}
         ]
@@ -623,7 +628,24 @@
         }
     });
 
-
+    /**
+     * @class Zenoss.Dashboard.stores.WatchListTargets
+     * @extend Zenoss.DirectStore
+     * Direct store for loading organizers
+     */
+    Ext.define("Zenoss.Dashboard.stores.WatchListTargets", {
+        extend: "Zenoss.NonPaginatedStore",
+        constructor: function(config) {
+            config = config || {};
+            Ext.applyIf(config, {
+                model: 'Zenoss.Dashboard.model.DeviceIssueModel',
+                initialSortColumn: "name",
+                directFn: Zenoss.remote.DashboardRouter.getWatchListTargets,
+                root: 'data'
+            });
+            this.callParent(arguments);
+        }
+    });
 
     /**
      * @class Zenoss.Dashboard.stores.WatchListStore
@@ -725,21 +747,18 @@
         },
         getCustomConfigFields: function() {
             var me = this,
-                store = Ext.create('Zenoss.Dashboard.stores.Organizer', {
+                store = Ext.create('Zenoss.Dashboard.stores.WatchListTargets', {
                     sorters: [{
                         property: 'fullOrganizerName',
                         direction: 'ASC'
                     }]
                 });
-            store.load({
-                params: {
-                    uid: '/zport/dmd',
-                    keys: ['uid', 'name', 'fullOrganizerName']
-                }
-            });
+            store.setBaseParam("keys", ['uid', 'name', 'fullOrganizerName']);
+            store.setBaseParam("uid", "/zport/dmd");
+            store.load({});
             var fields = [{
                 xtype: 'combo',
-                queryMode: 'local',
+                queryMode: 'remote',
                 displayField: 'fullOrganizerName',
                 valueField: 'uid',
                 listConfig: {
@@ -748,6 +767,7 @@
                 store: store,
                 editable: true,
                 forceSelection: true,
+                typeAhead: true,
                 fieldLabel: _t('Zenoss Objects'),
                 itemId: 'organizerCombo',
                 width: 225
