@@ -185,7 +185,7 @@ class DashboardFacade(ZuulFacade):
         """
         deviceClass = self._dmd.Devices.getOrganizer(deviceClassName)
         results = []
-        for rrdTemplate in deviceClass.rrdTemplates():
+        for rrdTemplate in getFacade('device', self._dmd).getBoundTemplates(deviceClass.getPrimaryId()):
             for graphDefinition in rrdTemplate.graphDefs():
                 for graphPoint in graphDefinition.graphPoints():
                     # complex or thresholds can't really be graphed at this point
