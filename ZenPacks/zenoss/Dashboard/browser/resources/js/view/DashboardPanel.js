@@ -358,6 +358,12 @@
                     minValue: 1,
                     maxValue: 10,
                     value: config.dashboard.get('columns')
+                },{
+                    xtype: 'checkbox',
+                    fieldLabel: _t('Lock from updates?'),
+                    name: 'locked',
+                    itemId: 'locked',
+                    checked: config.dashboard.get('locked')
                 }],
                 buttons: [{
                     xtype: 'DialogButton',
@@ -368,6 +374,7 @@
                             newId: me.down('textfield').getValue(),
                             contextUid: me.down('dashboardcontext').getValue(),
                             columns: me.down('numberfield').getValue(),
+                            locked: me.down('#locked').getValue(),
                             uid: me.dashboard.get('uid')
                         };
                         me.fireEvent('savedashboard', params);

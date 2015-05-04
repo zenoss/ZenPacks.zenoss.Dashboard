@@ -35,6 +35,11 @@ Ext.define('Zenoss.Dashboard.view.PortalDropZone', {
     },
 
     notifyOver: function(dd, e, data) {
+        // disallow dragging the dashboard if it is locked
+        var dashboard = window.globalApp.getController("DashboardController").getCurrentDashboard();
+        if (dashboard && dashboard.get('locked')) {
+            return;
+        }
         var xy = e.getXY(),
             portal = this.portal,
             proxy = dd.proxy;

@@ -203,6 +203,12 @@
         saveDashboardState: function() {
             var dashboard = this.getCurrentDashboard(),
                 state = this.getCurrentDashboardState();
+
+            // if the dashboard is locked then do not update the server with a new state
+            if (dashboard.get('locked')) {
+                return;
+            }
+
             dashboard.set('state', state);
             if (!this.saveTask) {
                 this.saveTask = new Ext.util.DelayedTask(Ext.bind(this._updateDashboardServerState, this));
@@ -287,6 +293,12 @@
             Ext.suspendLayouts();
             panel.removeAll();
             panel.add(columns);
+            // disable resizing on all the portlets if we are locked
+            if (dashboard.get('locked')) {
+                Ext.each(panel.query('portlet'), function(portlet){
+                    portlet.resizable = false;
+                });
+            }
             Ext.resumeLayouts(true);
         },
         /**

@@ -16,12 +16,14 @@ class Dashboard(ZenModelRM):
     owner = ""
     columns = 3
     state = ""
+    locked = False
 
     _properties =  (
         {'id':'name', 'type':'string', 'mode':'w'},
         {'id':'owner', 'type':'string', 'mode':'w'},
         {'id':'columns', 'type':'integer', 'mode':'w'},
         {'id':'state', 'type':'string', 'mode':'w'},
+        {'id':'locked', 'type':'boolean', 'mode':'w'},
     )
 
 
