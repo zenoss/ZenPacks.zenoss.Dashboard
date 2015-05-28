@@ -143,6 +143,23 @@ class DashboardFacade(ZuulFacade):
                 pass
         return results
 
+    def getTopLevelOrganizers(self, uid):
+        results = []
+        obj = self._getObject(uid or "/zport/dmd")
+        searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        for brain in searchresults:
+            try:
+                org = brain.getObject()
+                if org.children():
+                    continue
+                info = IInfo(org)
+                info.fullOrganizerName = self._getFullOrganizerName(org)
+                results.append(info)
+            except:
+                # error unbraining the object just skip it
+                pass
+        return results
+
     def getWatchListTargets(self, uid, query=""):
         results = self.getSubOrganizers(uid)
         if query:

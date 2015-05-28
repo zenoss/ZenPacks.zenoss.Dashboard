@@ -1048,8 +1048,6 @@
             self.selection = "10.171.54.0";
             var width = Math.max(attachPoint.style('width').replace("px", ""), 600);
             var height = Math.max(attachPoint.style('height').replace("px", ""), 400);
-
-            self.url = "/++resource++zenui/js/zenoss/networkMap/data/2.json";
             self.attachPoint = attachPoint;
 
 
@@ -1096,8 +1094,17 @@
                 }
                 var graph = response.data;
                 graph.nodes.forEach(function(n){
-                    self.nodes.push(n);
+                    var i =0, found = false;
+                    for (i=0; i<self.nodes.length;i++) {
+                        if (self.nodes[i].id  == n.id) {
+                            found = true;
+                        }
+                    }
+                    if (!found) {
+                        self.nodes.push(n);
+                    }
                 });
+                console.log(self.nodes);
                 node = node.data(self.force.nodes(), function(d) { return d.id; });
                 var nodeContainer = node.enter()
                     .append("g")
@@ -1257,6 +1264,135 @@
         }
     });
 
-
-
+    /**
+     * @class Zenoss.Dashboard.stores.TopLevelOrganizer
+     * @extend Zenoss.DirectStore
+     * Direct store for loading top level organizers
+     */
+    Ext.define("Zenoss.Dashboard.stores.TopLevelOrganizer", {
+        extend: "Zenoss.NonPaginatedStore",
+        constructor: function(config) {
+            config = config || {};
+            Ext.applyIf(config, {
+                model: 'Zenoss.Dashboard.model.DeviceIssueModel',
+                initialSortColumn: "name",
+                directFn: Zenoss.remote.DashboardRouter.getTopLevelOrganizers,
+                root: 'data'
+            });
+            this.callParent(arguments);
+        }
+    });
+    /**
+     * Top Level Organizers Portlet.
+     * @extends Zenoss.Dashboard.view.Portlet
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.TopLevelOrganizersPortlet', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.toplevelorganizersportlet',
+        title: _t('Top Level Organizers'),
+        height: 400,
+        rootOrganizer: '',
+        childOrganizer: '',
+        initComponent: function() {
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'grid',
+                    emptyText: _t('No records found.'),
+                    store: Ext.create('Zenoss.Dashboard.stores.TopLevelOrganizer', {}),
+                    columns: [{
+                        dataIndex: 'name',
+                        header: _t('Organizers'),
+                        flex: 1,
+                        hideable: false,
+                        renderer: function(name, row, record) {
+                            return Zenoss.render.link(record.data.uid, null, name);
+                        }
+                    },{
+                        dataIndex: 'events',
+                        header: _t('Events'),
+                        width: 120,
+                        sortable: false,
+                        renderer: function(value) {
+                            return Zenoss.render.events(value);
+                        }
+                    }]
+                }]
+            });
+            this.callParent(arguments);
+            this.on('afterrender', this.loadOrganizers, this, {single: true});
+        },
+        loadOrganizers: function() {
+            if (this.childOrganizer) {
+                var store = this.down('grid').getStore();
+                store.load({
+                    params: {
+                        uid: this.childOrganizer
+                    }
+                });
+            }
+        },
+        getConfig: function() {
+            return {
+                rootOrganizer: this.rootOrganizer,
+                childOrganizer: this.childOrganizer
+            };
+        },
+        applyConfig: function(config) {
+            var refresh = false;
+            if (config.childOrganizer && config.childOrganizer != this.childOrganizer) {
+                refresh = true;
+            }
+            this.callParent([config]);
+            if (this.rendered && refresh) {
+                this.loadOrganizers();
+            }
+        },
+        onRefresh: function() {
+            this.loadOrganizers();
+        },
+        getCustomConfigFields: function() {
+            var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
+            store.load({
+                params: {
+                    uid: this.rootOrganizer
+                }
+            });
+            var fields = [{
+                xtype: 'combo',
+                name: 'rootOrganizer',
+                queryMode: 'local',
+                store: ['Devices', 'Locations', 'Systems', 'Groups'],
+                listeners: {
+                    select: function(combo) {
+                        var rootOrganizer = combo.getValue(),
+                        childOrganizerCombo = Ext.getCmp('childOrganizerCombo'),
+                        store = childOrganizerCombo.getStore();
+                        store.load({
+                            params: {
+                                uid: rootOrganizer
+                            }
+                        });
+                        childOrganizerCombo.setValue('/zport/dmd/' + rootOrganizer);
+                        childOrganizerCombo.setDisabled(false);
+                    }
+                },
+                displayField: 'name',
+                valueField: 'uid',
+                fieldLabel: _t('Root Organizer'),
+                value: this.rootOrganizer
+            },{
+                id: 'childOrganizerCombo',
+                xtype: 'combo',
+                name: 'childOrganizer',
+                queryMode: 'local',
+                store: store,
+                displayField: 'name',
+                valueField: 'uid',
+                fieldLabel: _t('Child Organizer'),
+                disabled: !(this.childOrganizer),
+                value: this.childOrganizer
+            }];
+            return fields;
+        }
+    });
 }());
