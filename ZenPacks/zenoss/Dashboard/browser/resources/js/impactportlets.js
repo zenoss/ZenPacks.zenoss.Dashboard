@@ -33,7 +33,7 @@
                         sorterFn: function(o1, o2) {
                             var name1 = o1.get('node').name,
                             name2 = o2.get('node').name;
-                            if (name1 == name2) {
+                            if (name1 === name2) {
                                 return 0;
                             }
                             return name1 < name2 ? -1 : 1;
@@ -92,7 +92,7 @@
             };
         },
         applyConfig: function(config) {
-            if (config.serviceOrg != this.serviceOrg && Ext.isDefined(config.serviceOrg)) {
+            if (config.serviceOrg !== this.serviceOrg && Ext.isDefined(config.serviceOrg)) {
                 this.serviceOrg = config.serviceOrg;
                 this.loadData();
             }
@@ -101,8 +101,7 @@
         },
         loadData: function() {
             var params = {
-                uid: '/zport/dmd/DynamicServices'
-                    + this.serviceOrg,
+                uid: '/zport/dmd/DynamicServices' + this.serviceOrg,
                 keys: ['name', 'serviceStateDetails']
             };
             Zenoss.remote.ImpactRouter.getInfo(params, function(response){

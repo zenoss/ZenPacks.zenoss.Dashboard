@@ -7,7 +7,6 @@
  *
  ****************************************************************************/
 (function(){
-    var portletsContainer = Zenoss.Dashboard.portlets;
 
     Ext.define('Zenoss.Dashboard.view.AddPortletDialog', {
         extend: 'Zenoss.dialog.BaseWindow',
@@ -55,11 +54,11 @@
                     items: [{
                         xtype: 'panel',
                         layout: 'vbox',
-                        flex: .4,
+                        flex: 0.4,
                         height: 450,
                         items:[ {
                             xtype: 'panel',
-                            flex: .1,
+                            flex: 0.1,
                             width: "100%",
                             height: 100,
                             items: [{
@@ -78,7 +77,7 @@
                         }, {
                             xtype: 'panel',
                             itemId: 'configuration',
-                            flex: .9,
+                            flex: 0.9,
                             width: "100%",
                             layout: 'anchor',
                             defaults: {
@@ -88,7 +87,7 @@
                         }]
                     },{
                         xtype: 'panel',
-                        flex: .6,
+                        flex: 0.6,
                         itemId: 'preview'
                     }]
                 }],
@@ -186,7 +185,7 @@
                 layout: 'hbox',
                 items:[{
                     xtype: 'form',
-                    flex: .4,
+                    flex: 0.4,
                     height: 575,
                     width: 750,
                     layout: 'anchor',
@@ -214,7 +213,7 @@
                     }].concat(portlet.getConfigFields())
                 },{
                     xtype: 'panel',
-                    flex: .6,
+                    flex: 0.6,
                     height: 575,
                     itemId: 'preview',
                     items: [{
@@ -347,7 +346,7 @@
                     maskRe: /[a-zA-Z0-9-_~,.$\(\)# @]/,
                     fieldLabel: _t('Dashboard Name'),
                     allowBlank: false,
-                    disabled: config.dashboard.get('id') == 'default',
+                    disabled: config.dashboard.get('id') === 'default',
                     value: config.dashboard.get('id')
                 }, {
                     xtype: 'dashboardcontext',
@@ -415,11 +414,11 @@
                         listeners: {
                             afterrender: function(combo) {
                                 combo.getStore().on('load', function(){
-                                    var savedValue = combo.getValue(), idx, recordSelected;
+                                    var  idx, recordSelected;
                                     idx = combo.getStore().findExact('uid', combo.getValue());
                                     // if we don't have anything set by the "state" of the combo
                                     // then go ahead and force select the first item
-                                    if (!combo.getValue() || idx == -1) {
+                                    if (!combo.getValue() || idx === -1) {
                                         recordSelected = combo.getStore().getAt(0);
                                         combo.setValue(recordSelected.get('uid'));
                                     }

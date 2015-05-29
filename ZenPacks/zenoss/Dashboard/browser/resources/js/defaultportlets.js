@@ -1,3 +1,4 @@
+/* global _managed_objects: true */
 /*****************************************************************************
  *
  * Copyright (C) Zenoss, Inc. 2014, all rights reserved.
@@ -146,7 +147,7 @@
             return [];
         },
         applyConfig: function(config) {
-            if (config.height && config.height != this.height) {
+            if (config.height && config.height !== this.height) {
                 this.height = config.height;
                 if (this.getEl()) {
                     this.setHeight(config.height);
@@ -157,7 +158,7 @@
             }
 
             // update the refresh interval
-            if (config.refreshInterval && config.refreshInterval != this.refreshInterval) {
+            if (config.refreshInterval && config.refreshInterval !== this.refreshInterval) {
                 this.refreshTask.interval = config.refreshInterval * 1000;
             }
 
@@ -193,7 +194,7 @@
             };
         },
         applyConfig: function(config) {
-            if (config.html && config.html != this.content) {
+            if (config.html && config.html !== this.content) {
                 this.content = config.html;
                 this.update(config.html, true);
             }
@@ -711,7 +712,7 @@
                             var store = grid.getStore(), record = store.getAt(rowIndex);
                             // filter out the remove uid
                             me.uids = Zenoss.util.filter(me.uids, function(uid) {
-                                return uid != record.get('uid');
+                                return uid !== record.get('uid');
                             });
                             // update the store params
                             store.setBaseParam('uids', me.uids);
@@ -737,7 +738,7 @@
         applyConfig: function(config) {
             if (this.rendered) {
                 var grid = this.down('grid');
-                if (config.uids && config.uids != this.uids) {
+                if (config.uids && config.uids !== this.uids) {
                     grid.getStore().setBaseParam('uids', config.uids);
                     grid.getStore().load();
                 }
@@ -825,7 +826,7 @@
                 items:[{
                     animate: true,
                     xtype: 'chart',
-                    flex: .4,
+                    flex: 0.4,
                     height: 180,
                     shadow: false,
                     store: Ext.create('Ext.data.ArrayStore', {
@@ -860,7 +861,7 @@
                                     formatted;
                                 // find the number for the severity
                                 Ext.Array.each(sevs, function(sev) {
-                                    if (sev.toLowerCase() == severity.toLowerCase()) {
+                                    if (sev.toLowerCase() === severity.toLowerCase()) {
                                         return false;
                                     }
                                     idx++;
@@ -962,7 +963,7 @@
         },
         applyConfig: function(config) {
             var refresh = false;
-            if (config.eventClass != this.eventClass || config.summaryFilter != this.summaryFilter || config.daysPast != this.daysPast) {
+            if (config.eventClass !== this.eventClass || config.summaryFilter !== this.summaryFilter || config.daysPast !== this.daysPast) {
                 refresh = true;
             }
             this.callParent([config]);
@@ -1028,7 +1029,6 @@
             }
         },
         resizeSVG: function(panel, width, height) {
-            var el = Ext.get(this.networkMapId);
             Ext.get(this.networkMapId).setHeight(height -10);
             Ext.get(this.networkMapId).setWidth(width -10);
             this.svg.attr("height", height);
@@ -1042,7 +1042,6 @@
             this.destroyOldMap();
             // resize the svg whenever we are resized
             this.on('resize', this.resizeSVG, this);
-            var el = Ext.get(this.networkMapId);
             var self = this, attachPoint = d3.select("#" +this.networkMapId);
             self.imageDir="/zport/dmd/img/icons";
             self.selection = "10.171.54.0";
@@ -1096,7 +1095,7 @@
                 graph.nodes.forEach(function(n){
                     var i =0, found = false;
                     for (i=0; i<self.nodes.length;i++) {
-                        if (self.nodes[i].id  == n.id) {
+                        if (self.nodes[i].id  === n.id) {
                             found = true;
                         }
                     }
@@ -1156,7 +1155,7 @@
             if (config.depth) {
                 this.depth = config.depth;
             }
-            if (this.rendered && config.network && config.network != this.network) {
+            if (this.rendered && config.network && config.network !== this.network) {
                 this.network = config.network;
                 this.buildNetworkMap();
             }
@@ -1339,7 +1338,7 @@
         },
         applyConfig: function(config) {
             var refresh = false;
-            if (config.childOrganizer && config.childOrganizer != this.childOrganizer) {
+            if (config.childOrganizer && config.childOrganizer !== this.childOrganizer) {
                 refresh = true;
             }
             this.callParent([config]);

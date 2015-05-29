@@ -158,7 +158,7 @@
         deleteSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard(), me = this;
             // make sure we always have the default dashboard
-            if (dashboard.get('uid') == "/zport/dmd/ZenUsers/dashboards/default") {
+            if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default") {
                 new Zenoss.dialog.SimpleMessageDialog({
                     message: _t("You can not delete the default Dashboard"),
                     title: _t('Delete Dashboard'),
@@ -275,7 +275,7 @@
                 state = dashboard.get('state'), columns=[];
             if (state) {
                 columns = Ext.JSON.decode(state);
-                if (columns.length != dashboard.get('columns')) {
+                if (columns.length !== dashboard.get('columns')) {
                     columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
                     this.saveDashboardState();
                 }
@@ -340,7 +340,7 @@
             Ext.each(portlets, function(portlet){
                 newColumns[i].items.push(portlet);
                 i++;
-                if (i == columnLength) {
+                if (i === columnLength) {
                     i=0;
                 }
             });
