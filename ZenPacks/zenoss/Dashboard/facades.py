@@ -224,7 +224,8 @@ class DashboardFacade(ZuulFacade):
         for uid in graphPointsUids:
             gp = self._getObject(uid)
             for device in devices:
-                results.append(getMultiAdapter((gp, device), templateInterfaces.IMetricServiceGraphPoint))
+                if device.checkRemotePerm(ZEN_VIEW, device):
+                    results.append(getMultiAdapter((gp, device), templateInterfaces.IMetricServiceGraphPoint))
         # let the graph points know that they need the device name in the legend and to ignore the graph point color
         for info in results:
             info.setMultiContext()
