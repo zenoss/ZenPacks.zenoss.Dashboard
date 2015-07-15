@@ -881,7 +881,7 @@
                         },
                         tips: {
                             trackMouse: true,
-                            width: 175,
+                            width: 190,
                             height: 22,
                             renderer: function(storeItem, item) {
                                 var msg = Ext.String.format(_t("{0} Open {1} Events."), storeItem.get('value'), storeItem.get('name'));
@@ -996,6 +996,267 @@
         }
     });
 
+
+    /**
+     *  Portlet that shows the open events by severity
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.PastEventsChart', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.pasteventschart',
+        height: 350,
+        title: 'Past Events Line Chart',
+        eventClass: "/",
+        summaryFilter: "",
+        daysPast: 10,
+        initComponent: function(){
+            Ext.applyIf(this, {
+                items:[{
+                    xtype: 'chart',
+                    style: 'background:#fff',
+                    shadow: true,
+                    store: Ext.create('Ext.data.ArrayStore', {
+                        fields: ['time', 'critical', 'error', 'warning', 'info'],
+                        data: []
+                    }),
+                    theme: 'White',
+                    legend: {
+                        position: 'right'
+                    },
+                    axes: [{
+                        type: 'Numeric',
+                        minimum: 0,
+                        position: 'left',
+                        fields: ['critical', 'error', 'warning', 'info'],
+                        title: _t('Number of Opened Events'),
+                        minorTickSteps: 1,
+                        grid: {
+                            odd: {
+                                opacity: 1,
+                                fill: '#ddd',
+                                stroke: '#bbb',
+                                'stroke-width': 0.5
+                            }
+                        }
+                    }, {
+                        type: 'Category',
+                        position: 'bottom',
+                        fields: ['time'],
+                        title: 'Time'
+                    }],
+                    series: [{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'critical',
+                        style: {
+                            stroke: "#d60000"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#d60000"
+                        },
+                        tips: {
+                            trackMouse: true,
+                            width: 225,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Critical Events at {1}"), storeItem.get('critical'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    },{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'error',
+                        style: {
+                            stroke: "#ff9711"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#ff9711"
+                        },
+                        tips: {
+                            trackMouse: true,
+                            width: 225,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Error Events at {1}"), storeItem.get('error'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    },{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'warning',
+                        style: {
+                            stroke: "#fbd13d"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#fbd13d"
+                        },
+                        tips:{
+                            trackMouse: true,
+                            width: 225,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Warning Events at {1}"), storeItem.get('warning'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    },{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'info',
+                        style: {
+                            stroke: "#0472b8"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#0472b8"
+                        },
+                        tips:{
+                            trackMouse: true,
+                            width: 225,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Info Events at {1}"), storeItem.get('info'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    }]
+                }]
+
+            });
+            this.callParent(arguments);
+            this.on('afterrender', this.fetchEvents, this, {single: true});
+        },
+        onRefresh: function() {
+            this.fetchEvents();
+        },
+        fetchEvents: function() {
+            // gets all the open events for now
+            var start = new Date(), params;
+            start.setDate(start.getDate() - this.daysPast);
+
+            params = {
+                start: 0,
+                limit: 5000,
+                sort: 'firstTime',
+                dir: 'ASC',
+                keys: ['severity', 'firstTime'],
+                params: {
+                    eventClass: this.eventClass,
+                    severity: [Zenoss.SEVERITY_CRITICAL, Zenoss.SEVERITY_ERROR, Zenoss.SEVERITY_WARNING, Zenoss.SEVERITY_INFO],
+                    eventState: [],
+                    // format a time range Zep can understand
+                    lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
+                    summary: this.summaryFilter
+                }
+            };
+            Zenoss.remote.EventsRouter.query(params, this.loadData, this);
+        },
+        loadData: function(response) {
+            // make sure the response was success and we are already rendered
+            if (!response.success || !this.down('chart')) {
+                return;
+            }
+
+            // iterate through the events we get back from the server so we can
+            // build a store for the chart.
+            var store = this.down('chart').getStore(), data = [], events = response.events, i, counts={}, event, key;
+            for (i=0; i < events.length; i++) {
+                event = events[i];
+                key = Ext.Date.format(new Date(event.firstTime * 1000), "m-d H:") + "00";
+                if (!Ext.isDefined(counts[key])) {
+                    counts[key] = {};
+                    counts[key][Zenoss.SEVERITY_CRITICAL] = 0;
+                    counts[key][Zenoss.SEVERITY_ERROR] = 0;
+                    counts[key][Zenoss.SEVERITY_WARNING] = 0;
+                    counts[key][Zenoss.SEVERITY_INFO] = 0;
+                }
+                counts[key][event.severity]++;
+            }
+
+            for (key in counts) {
+                data.push([key,
+                           counts[key][Zenoss.SEVERITY_CRITICAL],
+                           counts[key][Zenoss.SEVERITY_ERROR],
+                           counts[key][Zenoss.SEVERITY_WARNING],
+                           counts[key][Zenoss.SEVERITY_INFO]
+                          ]);
+            }
+
+            store.loadData(data);
+        },
+        getConfig: function() {
+            return {
+                eventClass: this.eventClass,
+                summaryFilter: this.summaryFilter,
+                daysPast: this.daysPast
+            };
+        },
+        applyConfig: function(config) {
+            var refresh = false;
+            if (config.eventClass !== this.eventClass || config.summaryFilter !== this.summaryFilter || config.daysPast !== this.daysPast) {
+                refresh = true;
+            }
+            this.callParent([config]);
+            if (refresh) {
+                this.fetchEvents();
+            }
+        },
+        getCustomConfigFields: function() {
+            var fields = [{
+                xtype: 'eventclass',
+                fieldLabel: _t('Event Class'),
+                name: 'eventClass',
+                forceSelection: false,
+                autoSelect: false,
+                value: this.eventClass
+            },{
+                xtype: 'textfield',
+                name: 'summaryFilter',
+                fieldLabel: _t('Summary Filter'),
+                value: this.summaryFilter
+            }, {
+                xtype: 'numberfield',
+                minValue: 1,
+                maxValue: 60,
+                fieldLabel: _t('Number of past days to show events for'),
+                name: 'daysPast',
+                value: this.daysPast
+            }];
+            return fields;
+        }
+    });
 
 
     /**
