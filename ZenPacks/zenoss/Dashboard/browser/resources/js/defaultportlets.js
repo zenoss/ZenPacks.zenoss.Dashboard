@@ -1063,7 +1063,7 @@
                         },
                         tips: {
                             trackMouse: true,
-                            width: 225,
+                            width: 235,
                             height: 28,
                             renderer: function(storeItem, item) {
                                 var title = Ext.String.format(_t("{0} Critical Events at {1}"), storeItem.get('critical'), storeItem.get('time'));
@@ -1090,7 +1090,7 @@
                         },
                         tips: {
                             trackMouse: true,
-                            width: 225,
+                            width: 235,
                             height: 28,
                             renderer: function(storeItem, item) {
                                 var title = Ext.String.format(_t("{0} Error Events at {1}"), storeItem.get('error'), storeItem.get('time'));
@@ -1117,7 +1117,7 @@
                         },
                         tips:{
                             trackMouse: true,
-                            width: 225,
+                            width: 235,
                             height: 28,
                             renderer: function(storeItem, item) {
                                 var title = Ext.String.format(_t("{0} Warning Events at {1}"), storeItem.get('warning'), storeItem.get('time'));
@@ -1194,7 +1194,7 @@
             var store = this.down('chart').getStore(), data = [], events = response.events, i, counts={}, event, key;
             for (i=0; i < events.length; i++) {
                 event = events[i];
-                key = Ext.Date.format(new Date(event.firstTime * 1000), "m-d H:") + "00";
+                key = Ext.Date.format(new Date(event.firstTime * 1000), "D ha");
                 if (!Ext.isDefined(counts[key])) {
                     counts[key] = {};
                     counts[key][Zenoss.SEVERITY_CRITICAL] = 0;
