@@ -56,6 +56,9 @@
                 },
                 'portalpanel': {
                     drop:  this.saveDashboardState
+                },
+                'portlet tool[itemId="fullscreenPortlet"]': {
+                    click: this.fullScreenPortlet
                 }
             });
         },
@@ -89,6 +92,32 @@
                 this.saveDashboardState();
                 win.close();
             }, this, {single: true});
+            win.show();
+        },
+        fullScreenPortlet: function(tool){
+            var portlet = this.extractPortlet(tool.up('portlet')), win;
+            Ext.apply(portlet, {
+                height: '100%',
+                tools: [],
+                collapsible: false,
+                closable: false
+            });
+            win = Ext.create('Zenoss.dialog.BaseDialog', {
+                maximized: true,
+                cls: 'white-background-panel',
+                items: [portlet],
+                title: portlet.title,
+                layout: 'fit',
+                closeAction: 'destroy',
+                buttons: [{
+                    xtype: 'button',
+                    ui: 'dialog-dark',
+                    text: _t('Close'),
+                    handler: function(){
+                        win.close();
+                    }
+                }]
+            });
             win.show();
         },
         showNewDashboardDialog: function() {

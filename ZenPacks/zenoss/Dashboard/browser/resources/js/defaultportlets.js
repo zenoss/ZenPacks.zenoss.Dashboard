@@ -35,6 +35,10 @@
         cls: 'x-portlet',
         tools: [{
             xtype: 'tool',
+            itemId: 'fullscreenPortlet',
+            type: 'restore'
+        },{
+            xtype: 'tool',
             itemId: 'editPortlet',
             type: 'gear'
         }],
