@@ -1,3 +1,4 @@
+/* global _managed_objects: true */
 /*****************************************************************************
  *
  * Copyright (C) Zenoss, Inc. 2014, all rights reserved.
@@ -33,6 +34,10 @@
         },
         cls: 'x-portlet',
         tools: [{
+            xtype: 'tool',
+            itemId: 'fullscreenPortlet',
+            type: 'restore'
+        },{
             xtype: 'tool',
             itemId: 'editPortlet',
             type: 'gear'
@@ -146,7 +151,7 @@
             return [];
         },
         applyConfig: function(config) {
-            if (config.height && config.height != this.height) {
+            if (config.height && config.height !== this.height) {
                 this.height = config.height;
                 if (this.getEl()) {
                     this.setHeight(config.height);
@@ -157,7 +162,7 @@
             }
 
             // update the refresh interval
-            if (config.refreshInterval && config.refreshInterval != this.refreshInterval) {
+            if (config.refreshInterval && config.refreshInterval !== this.refreshInterval) {
                 this.refreshTask.interval = config.refreshInterval * 1000;
             }
 
@@ -193,7 +198,7 @@
             };
         },
         applyConfig: function(config) {
-            if (config.html && config.html != this.content) {
+            if (config.html && config.html !== this.content) {
                 this.content = config.html;
                 this.update(config.html, true);
             }
@@ -711,7 +716,7 @@
                             var store = grid.getStore(), record = store.getAt(rowIndex);
                             // filter out the remove uid
                             me.uids = Zenoss.util.filter(me.uids, function(uid) {
-                                return uid != record.get('uid');
+                                return uid !== record.get('uid');
                             });
                             // update the store params
                             store.setBaseParam('uids', me.uids);
@@ -737,7 +742,7 @@
         applyConfig: function(config) {
             if (this.rendered) {
                 var grid = this.down('grid');
-                if (config.uids && config.uids != this.uids) {
+                if (config.uids && config.uids !== this.uids) {
                     grid.getStore().setBaseParam('uids', config.uids);
                     grid.getStore().load();
                 }
@@ -825,7 +830,7 @@
                 items:[{
                     animate: true,
                     xtype: 'chart',
-                    flex: .4,
+                    flex: 0.4,
                     height: 180,
                     shadow: false,
                     store: Ext.create('Ext.data.ArrayStore', {
@@ -860,7 +865,7 @@
                                     formatted;
                                 // find the number for the severity
                                 Ext.Array.each(sevs, function(sev) {
-                                    if (sev.toLowerCase() == severity.toLowerCase()) {
+                                    if (sev.toLowerCase() === severity.toLowerCase()) {
                                         return false;
                                     }
                                     idx++;
@@ -880,7 +885,7 @@
                         },
                         tips: {
                             trackMouse: true,
-                            width: 175,
+                            width: 190,
                             height: 22,
                             renderer: function(storeItem, item) {
                                 var msg = Ext.String.format(_t("{0} Open {1} Events."), storeItem.get('value'), storeItem.get('name'));
@@ -962,7 +967,7 @@
         },
         applyConfig: function(config) {
             var refresh = false;
-            if (config.eventClass != this.eventClass || config.summaryFilter != this.summaryFilter || config.daysPast != this.daysPast) {
+            if (config.eventClass !== this.eventClass || config.summaryFilter !== this.summaryFilter || config.daysPast !== this.daysPast) {
                 refresh = true;
             }
             this.callParent([config]);
@@ -996,6 +1001,267 @@
     });
 
 
+    /**
+     *  Portlet that shows the open events by severity
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.PastEventsChart', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.pasteventschart',
+        height: 350,
+        title: 'Past Events Line Chart',
+        eventClass: "/",
+        summaryFilter: "",
+        daysPast: 10,
+        initComponent: function(){
+            Ext.applyIf(this, {
+                items:[{
+                    xtype: 'chart',
+                    style: 'background:#fff',
+                    shadow: true,
+                    store: Ext.create('Ext.data.ArrayStore', {
+                        fields: ['time', 'critical', 'error', 'warning', 'info'],
+                        data: []
+                    }),
+                    theme: 'White',
+                    legend: {
+                        position: 'right'
+                    },
+                    axes: [{
+                        type: 'Numeric',
+                        minimum: 0,
+                        position: 'left',
+                        fields: ['critical', 'error', 'warning', 'info'],
+                        title: _t('Number of Opened Events'),
+                        minorTickSteps: 1,
+                        grid: {
+                            odd: {
+                                opacity: 1,
+                                fill: '#ddd',
+                                stroke: '#bbb',
+                                'stroke-width': 0.5
+                            }
+                        }
+                    }, {
+                        type: 'Category',
+                        position: 'bottom',
+                        fields: ['time'],
+                        title: 'Time'
+                    }],
+                    series: [{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'critical',
+                        style: {
+                            stroke: "#d60000"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#d60000"
+                        },
+                        tips: {
+                            trackMouse: true,
+                            width: 235,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Critical Events at {1}"), storeItem.get('critical'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    },{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'error',
+                        style: {
+                            stroke: "#ff9711"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#ff9711"
+                        },
+                        tips: {
+                            trackMouse: true,
+                            width: 235,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Error Events at {1}"), storeItem.get('error'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    },{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'warning',
+                        style: {
+                            stroke: "#fbd13d"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#fbd13d"
+                        },
+                        tips:{
+                            trackMouse: true,
+                            width: 235,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Warning Events at {1}"), storeItem.get('warning'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    },{
+                        type: 'line',
+                        highlight: {
+                            size: 7,
+                            radius: 7
+                        },
+                        axis: 'left',
+                        xField: 'time',
+                        yField: 'info',
+                        style: {
+                            stroke: "#0472b8"
+                        },
+                        markerConfig: {
+                            size: 0,
+                            radius: 0,
+                            'stroke-width': 0,
+                            stroke: "#0472b8"
+                        },
+                        tips:{
+                            trackMouse: true,
+                            width: 225,
+                            height: 28,
+                            renderer: function(storeItem, item) {
+                                var title = Ext.String.format(_t("{0} Info Events at {1}"), storeItem.get('info'), storeItem.get('time'));
+                                this.setTitle(title);
+                            }
+                        }
+                    }]
+                }]
+
+            });
+            this.callParent(arguments);
+            this.on('afterrender', this.fetchEvents, this, {single: true});
+        },
+        onRefresh: function() {
+            this.fetchEvents();
+        },
+        fetchEvents: function() {
+            // gets all the open events for now
+            var start = new Date(), params;
+            start.setDate(start.getDate() - this.daysPast);
+
+            params = {
+                start: 0,
+                limit: 5000,
+                sort: 'firstTime',
+                dir: 'ASC',
+                keys: ['severity', 'firstTime'],
+                params: {
+                    eventClass: this.eventClass,
+                    severity: [Zenoss.SEVERITY_CRITICAL, Zenoss.SEVERITY_ERROR, Zenoss.SEVERITY_WARNING, Zenoss.SEVERITY_INFO],
+                    eventState: [],
+                    // format a time range Zep can understand
+                    lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
+                    summary: this.summaryFilter
+                }
+            };
+            Zenoss.remote.EventsRouter.query(params, this.loadData, this);
+        },
+        loadData: function(response) {
+            // make sure the response was success and we are already rendered
+            if (!response.success || !this.down('chart')) {
+                return;
+            }
+
+            // iterate through the events we get back from the server so we can
+            // build a store for the chart.
+            var store = this.down('chart').getStore(), data = [], events = response.events, i, counts={}, event, key;
+            for (i=0; i < events.length; i++) {
+                event = events[i];
+                key = Ext.Date.format(new Date(event.firstTime * 1000), "D ha");
+                if (!Ext.isDefined(counts[key])) {
+                    counts[key] = {};
+                    counts[key][Zenoss.SEVERITY_CRITICAL] = 0;
+                    counts[key][Zenoss.SEVERITY_ERROR] = 0;
+                    counts[key][Zenoss.SEVERITY_WARNING] = 0;
+                    counts[key][Zenoss.SEVERITY_INFO] = 0;
+                }
+                counts[key][event.severity]++;
+            }
+
+            for (key in counts) {
+                data.push([key,
+                           counts[key][Zenoss.SEVERITY_CRITICAL],
+                           counts[key][Zenoss.SEVERITY_ERROR],
+                           counts[key][Zenoss.SEVERITY_WARNING],
+                           counts[key][Zenoss.SEVERITY_INFO]
+                          ]);
+            }
+
+            store.loadData(data);
+        },
+        getConfig: function() {
+            return {
+                eventClass: this.eventClass,
+                summaryFilter: this.summaryFilter,
+                daysPast: this.daysPast
+            };
+        },
+        applyConfig: function(config) {
+            var refresh = false;
+            if (config.eventClass !== this.eventClass || config.summaryFilter !== this.summaryFilter || config.daysPast !== this.daysPast) {
+                refresh = true;
+            }
+            this.callParent([config]);
+            if (refresh) {
+                this.fetchEvents();
+            }
+        },
+        getCustomConfigFields: function() {
+            var fields = [{
+                xtype: 'eventclass',
+                fieldLabel: _t('Event Class'),
+                name: 'eventClass',
+                forceSelection: false,
+                autoSelect: false,
+                value: this.eventClass
+            },{
+                xtype: 'textfield',
+                name: 'summaryFilter',
+                fieldLabel: _t('Summary Filter'),
+                value: this.summaryFilter
+            }, {
+                xtype: 'numberfield',
+                minValue: 1,
+                maxValue: 60,
+                fieldLabel: _t('Number of past days to show events for'),
+                name: 'daysPast',
+                value: this.daysPast
+            }];
+            return fields;
+        }
+    });
+
 
     /**
      * Network Map Portlet.
@@ -1028,7 +1294,6 @@
             }
         },
         resizeSVG: function(panel, width, height) {
-            var el = Ext.get(this.networkMapId);
             Ext.get(this.networkMapId).setHeight(height -10);
             Ext.get(this.networkMapId).setWidth(width -10);
             this.svg.attr("height", height);
@@ -1042,14 +1307,11 @@
             this.destroyOldMap();
             // resize the svg whenever we are resized
             this.on('resize', this.resizeSVG, this);
-            var el = Ext.get(this.networkMapId);
             var self = this, attachPoint = d3.select("#" +this.networkMapId);
             self.imageDir="/zport/dmd/img/icons";
             self.selection = "10.171.54.0";
             var width = Math.max(attachPoint.style('width').replace("px", ""), 600);
             var height = Math.max(attachPoint.style('height').replace("px", ""), 400);
-
-            self.url = "/++resource++zenui/js/zenoss/networkMap/data/2.json";
             self.attachPoint = attachPoint;
 
 
@@ -1096,8 +1358,17 @@
                 }
                 var graph = response.data;
                 graph.nodes.forEach(function(n){
-                    self.nodes.push(n);
+                    var i =0, found = false;
+                    for (i=0; i<self.nodes.length;i++) {
+                        if (self.nodes[i].id  === n.id) {
+                            found = true;
+                        }
+                    }
+                    if (!found) {
+                        self.nodes.push(n);
+                    }
                 });
+                console.log(self.nodes);
                 node = node.data(self.force.nodes(), function(d) { return d.id; });
                 var nodeContainer = node.enter()
                     .append("g")
@@ -1149,7 +1420,7 @@
             if (config.depth) {
                 this.depth = config.depth;
             }
-            if (this.rendered && config.network && config.network != this.network) {
+            if (this.rendered && config.network && config.network !== this.network) {
                 this.network = config.network;
                 this.buildNetworkMap();
             }
@@ -1257,6 +1528,135 @@
         }
     });
 
-
-
+    /**
+     * @class Zenoss.Dashboard.stores.TopLevelOrganizer
+     * @extend Zenoss.DirectStore
+     * Direct store for loading top level organizers
+     */
+    Ext.define("Zenoss.Dashboard.stores.TopLevelOrganizer", {
+        extend: "Zenoss.NonPaginatedStore",
+        constructor: function(config) {
+            config = config || {};
+            Ext.applyIf(config, {
+                model: 'Zenoss.Dashboard.model.DeviceIssueModel',
+                initialSortColumn: "name",
+                directFn: Zenoss.remote.DashboardRouter.getTopLevelOrganizers,
+                root: 'data'
+            });
+            this.callParent(arguments);
+        }
+    });
+    /**
+     * Top Level Organizers Portlet.
+     * @extends Zenoss.Dashboard.view.Portlet
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.TopLevelOrganizersPortlet', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.toplevelorganizersportlet',
+        title: _t('Top Level Organizers'),
+        height: 400,
+        rootOrganizer: '',
+        childOrganizer: '',
+        initComponent: function() {
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'grid',
+                    emptyText: _t('No records found.'),
+                    store: Ext.create('Zenoss.Dashboard.stores.TopLevelOrganizer', {}),
+                    columns: [{
+                        dataIndex: 'name',
+                        header: _t('Organizers'),
+                        flex: 1,
+                        hideable: false,
+                        renderer: function(name, row, record) {
+                            return Zenoss.render.link(record.data.uid, null, name);
+                        }
+                    },{
+                        dataIndex: 'events',
+                        header: _t('Events'),
+                        width: 120,
+                        sortable: false,
+                        renderer: function(value) {
+                            return Zenoss.render.events(value);
+                        }
+                    }]
+                }]
+            });
+            this.callParent(arguments);
+            this.on('afterrender', this.loadOrganizers, this, {single: true});
+        },
+        loadOrganizers: function() {
+            if (this.childOrganizer) {
+                var store = this.down('grid').getStore();
+                store.load({
+                    params: {
+                        uid: this.childOrganizer
+                    }
+                });
+            }
+        },
+        getConfig: function() {
+            return {
+                rootOrganizer: this.rootOrganizer,
+                childOrganizer: this.childOrganizer
+            };
+        },
+        applyConfig: function(config) {
+            var refresh = false;
+            if (config.childOrganizer && config.childOrganizer !== this.childOrganizer) {
+                refresh = true;
+            }
+            this.callParent([config]);
+            if (this.rendered && refresh) {
+                this.loadOrganizers();
+            }
+        },
+        onRefresh: function() {
+            this.loadOrganizers();
+        },
+        getCustomConfigFields: function() {
+            var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
+            store.load({
+                params: {
+                    uid: this.rootOrganizer
+                }
+            });
+            var fields = [{
+                xtype: 'combo',
+                name: 'rootOrganizer',
+                queryMode: 'local',
+                store: ['Devices', 'Locations', 'Systems', 'Groups'],
+                listeners: {
+                    select: function(combo) {
+                        var rootOrganizer = combo.getValue(),
+                        childOrganizerCombo = Ext.getCmp('childOrganizerCombo'),
+                        store = childOrganizerCombo.getStore();
+                        store.load({
+                            params: {
+                                uid: rootOrganizer
+                            }
+                        });
+                        childOrganizerCombo.setValue('/zport/dmd/' + rootOrganizer);
+                        childOrganizerCombo.setDisabled(false);
+                    }
+                },
+                displayField: 'name',
+                valueField: 'uid',
+                fieldLabel: _t('Root Organizer'),
+                value: this.rootOrganizer
+            },{
+                id: 'childOrganizerCombo',
+                xtype: 'combo',
+                name: 'childOrganizer',
+                queryMode: 'local',
+                store: store,
+                displayField: 'name',
+                valueField: 'uid',
+                fieldLabel: _t('Child Organizer'),
+                disabled: !(this.childOrganizer),
+                value: this.childOrganizer
+            }];
+            return fields;
+        }
+    });
 }());

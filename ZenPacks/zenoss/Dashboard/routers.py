@@ -69,6 +69,10 @@ class DashboardRouter(DirectRouter):
         result = facade.getSubOrganizers(uid)
         return DirectResponse.succeed(data=Zuul.marshal(result, keys=keys))
 
+    def getTopLevelOrganizers(self, uid, keys=None):
+        facade = self._getFacade()
+        result = facade.getTopLevelOrganizers(uid)
+        return DirectResponse.succeed(data=Zuul.marshal(result, keys=keys))
 
     def getWatchListTargets(self, uid=None, keys=None, query=None):
         facade = self._getFacade()

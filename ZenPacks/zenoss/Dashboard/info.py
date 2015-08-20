@@ -25,6 +25,7 @@ class DashboardInfo(InfoBase):
     owner = ProxyProperty('owner')
     columns = ProxyProperty('columns')
     state = ProxyProperty('state')
+    locked = ProxyProperty('locked')
 
     @property
     def contextUid(self):

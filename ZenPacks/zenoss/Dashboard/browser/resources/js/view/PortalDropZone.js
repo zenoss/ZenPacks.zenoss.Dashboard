@@ -35,6 +35,11 @@ Ext.define('Zenoss.Dashboard.view.PortalDropZone', {
     },
 
     notifyOver: function(dd, e, data) {
+        // disallow dragging the dashboard if it is locked
+        var dashboard = window.globalApp.getController("DashboardController").getCurrentDashboard();
+        if (dashboard && dashboard.get('locked')) {
+            return;
+        }
         var xy = e.getXY(),
             portal = this.portal,
             proxy = dd.proxy;
@@ -49,7 +54,7 @@ Ext.define('Zenoss.Dashboard.view.PortalDropZone', {
         if (!this.lastCW) {
             // set initial client width
             this.lastCW = cw;
-        } else if (this.lastCW != cw) {
+        } else if (this.lastCW !== cw) {
             // client width has changed, so refresh layout & grid calcs
             this.lastCW = cw;
             //portal.doLayout();

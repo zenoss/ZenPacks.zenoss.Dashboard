@@ -37,7 +37,7 @@
                     xtype: 'radio',
                     name: 'uid',
                     boxLabel: _t('Just me'),
-                    checked: context == "current_user",
+                    checked: context === "current_user",
                     itemId: 'justme'
                 }, {
                     xtype: 'container',
@@ -46,7 +46,7 @@
                         xtype: 'radio',
                         name: 'uid',
                         itemId: 'usergroup',
-                        checked: context == "user_groups",
+                        checked: context === "user_groups",
                         boxLabel: _t('User Group')
 
                     }, {
@@ -62,7 +62,7 @@
                             listeners: {
                                 load: function(store) {
                                     var combo = me.down('combo');
-                                    if (context == "user_groups") {
+                                    if (context === "user_groups") {
                                         combo.setValue(config.dashboard.get('contextUid'));
                                     } else {
                                         var first = store.data.first();
@@ -91,7 +91,7 @@
                 }, {
                     xtype: 'radio',
                     name: 'uid',
-                    checked: context == "global",
+                    checked: context === "global",
                     itemId: 'everyone',
                     boxLabel: _t('Everyone')
                 }]
@@ -99,8 +99,7 @@
             this.callParent([config]);
         },
         getValue: function() {
-            var justMe = this.down('radio[itemId="justme"]').getValue(),
-                global = this.down('radio[itemId="everyone"]').getValue(),
+            var global = this.down('radio[itemId="everyone"]').getValue(),
                 userGroup = this.down('radio[itemId="usergroup"]').getValue();
             // only one can be selected
             if (global) {
