@@ -12,6 +12,48 @@
     Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://www2.zenoss.com/in-app-welcome";
 
     /**
+     *  Returns the first non argument to this function. So
+     *  coalesce(null, undefined, 0, 1) will return 0
+     **/
+    function coalesce() {
+        var i;
+        for (i =0; i < arguments.length; i++) {
+            if (Ext.isDefined(arguments[i]) && arguments[i] !== null) {
+                return arguments[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     *  Creates the sorter for events. This allows portlet grids that have events to
+     *  sort based on those events.
+     **/
+    Zenoss.Dashboard.eventSort = function(state) {
+        var ds = this.up('grid').getStore();
+        var field = this.getSortParam();
+        ds.sort({
+            property: field,
+            direction: state,
+            sorterFn: function(v1, v2){
+                v1 = v1.get(field);
+                v2 = v2.get(field);
+                // give more weight to higher severity events by evaulating them first
+                var order = ['critical', 'error', 'warning'], v1Value, v2Value, i, severity;
+                for (i=0; i < order.length; i ++ ) {
+                    severity = order[i];
+                    v1Value = v1[severity].count + v1[severity].acknowledged_count;
+                    v2Value = v2[severity].count + v2[severity].acknowledged_count;
+                    if (v2Value || v1Value) {
+                        return v1Value > v2Value ? 1 : (v1Value < v2Value ? -1 : 0);
+                    }
+                }
+                return 1;
+            }
+        });
+    };
+
+    /**
      * @class Zenoss.Dashboard.view.Portlet
      * @extends Ext.panel.Panel
      * A {@link Ext.panel.Panel Panel} class that is managed by {@link Zenoss.dashboard.view.DashboardPanel}.
@@ -446,7 +488,8 @@
                         width: 75,
                         dataIndex: 'events',
                         header: _t('Events'),
-                        sortable: false,
+                        sortable: true,
+                        doSort: Zenoss.Dashboard.eventSort,
                         renderer: function(ev, ignored, record) {
                             var table = Zenoss.render.worstevents(ev),
                             url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
@@ -705,6 +748,7 @@
                         header: _t('Events'),
                         width: 120,
                         hideable: false,
+                        doSort: Zenoss.Dashboard.eventSort,
                         renderer: function(value) {
                             return Zenoss.render.events(value);
                         }
@@ -1575,7 +1619,7 @@
                         dataIndex: 'events',
                         header: _t('Events'),
                         width: 120,
-                        sortable: false,
+                        doSort: Zenoss.Dashboard.eventSort,
                         renderer: function(value) {
                             return Zenoss.render.events(value);
                         }
