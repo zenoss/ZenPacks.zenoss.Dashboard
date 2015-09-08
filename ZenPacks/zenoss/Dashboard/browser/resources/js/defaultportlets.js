@@ -485,13 +485,13 @@
                             return Zenoss.render.Device(record.data.uid, name);
                         }
                     },{
-                        width: 75,
+                        width: 175,
                         dataIndex: 'events',
                         header: _t('Events'),
                         sortable: true,
                         doSort: Zenoss.Dashboard.eventSort,
                         renderer: function(ev, ignored, record) {
-                            var table = Zenoss.render.worstevents(ev),
+                            var table = Zenoss.render.events(ev),
                             url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
                             if (table){
                                 table = table.replace('table', 'table onclick="location.href=\''+url+'\';"');
