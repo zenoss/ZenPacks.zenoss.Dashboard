@@ -143,6 +143,23 @@ class DashboardFacade(ZuulFacade):
                 pass
         return results
 
+    def getTopLevelOrganizers(self, uid):
+        results = []
+        obj = self._getObject(uid or "/zport/dmd")
+        searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        for brain in searchresults:
+            try:
+                org = brain.getObject()
+                if org.children():
+                    continue
+                info = IInfo(org)
+                info.fullOrganizerName = self._getFullOrganizerName(org)
+                results.append(info)
+            except:
+                # error unbraining the object just skip it
+                pass
+        return results
+
     def getWatchListTargets(self, uid, query=""):
         results = self.getSubOrganizers(uid)
         if query:
@@ -185,7 +202,7 @@ class DashboardFacade(ZuulFacade):
         """
         deviceClass = self._dmd.Devices.getOrganizer(deviceClassName)
         results = []
-        for rrdTemplate in deviceClass.rrdTemplates():
+        for rrdTemplate in getFacade('device', self._dmd).getBoundTemplates(deviceClass.getPrimaryId()):
             for graphDefinition in rrdTemplate.graphDefs():
                 for graphPoint in graphDefinition.graphPoints():
                     # complex or thresholds can't really be graphed at this point
@@ -207,7 +224,8 @@ class DashboardFacade(ZuulFacade):
         for uid in graphPointsUids:
             gp = self._getObject(uid)
             for device in devices:
-                results.append(getMultiAdapter((gp, device), templateInterfaces.IMetricServiceGraphPoint))
+                if device.checkRemotePerm(ZEN_VIEW, device):
+                    results.append(getMultiAdapter((gp, device), templateInterfaces.IMetricServiceGraphPoint))
         # let the graph points know that they need the device name in the legend and to ignore the graph point color
         for info in results:
             info.setMultiContext()

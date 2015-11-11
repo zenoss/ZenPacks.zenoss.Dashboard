@@ -76,12 +76,12 @@
 
             // device class
             var rebuildGraph = false;
-            if (config.deviceClass && this.deviceClass != config.deviceClass) {
+            if (config.deviceClass && this.deviceClass !== config.deviceClass) {
                 rebuildGraph = true;
             }
 
             // selected graph points
-            if (config.graphPoints && this.graphPoints != config.graphPoints) {
+            if (config.graphPoints && this.graphPoints !== config.graphPoints) {
                 rebuildGraph = true;
             }
 

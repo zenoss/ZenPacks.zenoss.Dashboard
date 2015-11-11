@@ -15,7 +15,6 @@ Ext.define('Zenoss.Dashboard.view.PortalPanel', {
     autoScroll: true,
 
     initComponent : function() {
-        var me = this;
 
         // Implement a Container beforeLayout call from the layout to this Container
         this.layout = {

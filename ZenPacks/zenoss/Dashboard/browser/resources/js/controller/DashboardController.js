@@ -56,6 +56,9 @@
                 },
                 'portalpanel': {
                     drop:  this.saveDashboardState
+                },
+                'portlet tool[itemId="fullscreenPortlet"]': {
+                    click: this.fullScreenPortlet
                 }
             });
         },
@@ -89,6 +92,32 @@
                 this.saveDashboardState();
                 win.close();
             }, this, {single: true});
+            win.show();
+        },
+        fullScreenPortlet: function(tool){
+            var portlet = this.extractPortlet(tool.up('portlet')), win;
+            Ext.apply(portlet, {
+                height: '100%',
+                tools: [],
+                collapsible: false,
+                closable: false
+            });
+            win = Ext.create('Zenoss.dialog.BaseDialog', {
+                maximized: true,
+                cls: 'white-background-panel',
+                items: [portlet],
+                title: portlet.title,
+                layout: 'fit',
+                closeAction: 'destroy',
+                buttons: [{
+                    xtype: 'button',
+                    ui: 'dialog-dark',
+                    text: _t('Close'),
+                    handler: function(){
+                        win.close();
+                    }
+                }]
+            });
             win.show();
         },
         showNewDashboardDialog: function() {
@@ -158,7 +187,7 @@
         deleteSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard(), me = this;
             // make sure we always have the default dashboard
-            if (dashboard.get('uid') == "/zport/dmd/ZenUsers/dashboards/default") {
+            if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default") {
                 new Zenoss.dialog.SimpleMessageDialog({
                     message: _t("You can not delete the default Dashboard"),
                     title: _t('Delete Dashboard'),
@@ -203,6 +232,12 @@
         saveDashboardState: function() {
             var dashboard = this.getCurrentDashboard(),
                 state = this.getCurrentDashboardState();
+
+            // if the dashboard is locked then do not update the server with a new state
+            if (dashboard.get('locked')) {
+                return;
+            }
+
             dashboard.set('state', state);
             if (!this.saveTask) {
                 this.saveTask = new Ext.util.DelayedTask(Ext.bind(this._updateDashboardServerState, this));
@@ -233,7 +268,7 @@
             // TODO: find the column that is the smallest
             // add the portlet to it
             var columns = this.getDashboardPanel().query('portalcolumn');
-            columns[0].add(portletConfig);
+            columns[0].insert(0, portletConfig);
         },
         /**
          * returns a JSON encoded string that is the dashboards "layout".
@@ -269,7 +304,7 @@
                 state = dashboard.get('state'), columns=[];
             if (state) {
                 columns = Ext.JSON.decode(state);
-                if (columns.length != dashboard.get('columns')) {
+                if (columns.length !== dashboard.get('columns')) {
                     columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
                     this.saveDashboardState();
                 }
@@ -287,6 +322,12 @@
             Ext.suspendLayouts();
             panel.removeAll();
             panel.add(columns);
+            // disable resizing on all the portlets if we are locked
+            if (dashboard.get('locked')) {
+                Ext.each(panel.query('portlet'), function(portlet){
+                    portlet.resizable = false;
+                });
+            }
             Ext.resumeLayouts(true);
         },
         /**
@@ -328,7 +369,7 @@
             Ext.each(portlets, function(portlet){
                 newColumns[i].items.push(portlet);
                 i++;
-                if (i == columnLength) {
+                if (i === columnLength) {
                     i=0;
                 }
             });

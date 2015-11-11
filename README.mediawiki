@@ -124,6 +124,11 @@ The following issues have been identified in the most recent release of this Zen
 
 
 == Changes ==
+;1.0.6
+* Added Event Line Chart Portlet
+* Ability to fullscreen a portlet
+;1.0.5
+* Added searching and devices to the Watch List Portlet
 ;1.0.4
 * Now includes the Impact portlet
 ;1.0.3
