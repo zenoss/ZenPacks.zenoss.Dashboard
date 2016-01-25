@@ -268,14 +268,7 @@
     Ext.define('Zenoss.Dashboard.view.AddDashboardDialog', {
         extend: 'Zenoss.FormDialog',
         constructor: function(config) {
-            var me = this,
-                hideCloneOption = true, dashboardId;
-
-            if (config.currentDashboard) {
-                hideCloneOption = false;
-                dashboardId = config.currentDashboard.get('id');
-            }
-
+            var me = this;
             Ext.applyIf(config, {
                 title: _t('Add a New Dashboard'),
                 height: 300,
@@ -301,12 +294,11 @@
                     minValue: 1,
                     maxValue: 10,
                     value: 3
-                }, {
+                },{
                     xtype: 'checkbox',
                     itemId: 'clone',
-                    fieldLabel: Ext.String.format(_t('Clone from dashboard ({0})'), dashboardId),
-                    value: 0,
-                    hidden: hideCloneOption
+                    fieldLabel: Ext.String.format(_t('Clone from dashboard ({0})'), config.currentDashboard.get('id')),
+                    value: 0
                 }],
                 buttons: [{
                     xtype: 'DialogButton',
@@ -325,7 +317,6 @@
                     }
                 }, Zenoss.dialog.CANCEL]
             });
-
             this.callParent([config]);
         },
         initComponent: function() {
@@ -422,22 +413,19 @@
                         store: Ext.create('Zenoss.Dashboard.model.DashboardStore', {}),
                         listeners: {
                             afterrender: function(combo) {
-                                combo.getStore().on('load', function() {
+                                combo.getStore().on('load', function(){
                                     var  idx, recordSelected;
                                     idx = combo.getStore().findExact('uid', combo.getValue());
                                     // if we don't have anything set by the "state" of the combo
                                     // then go ahead and force select the first item
                                     if (!combo.getValue() || idx === -1) {
                                         recordSelected = combo.getStore().getAt(0);
-                                        if (recordSelected) {
-                                            combo.setValue(recordSelected.get('uid'));
-                                        } else {
-                                            combo.clearValue();
-                                        }
+                                        combo.setValue(recordSelected.get('uid'));
                                     }
                                     // this actually renders the dashboard
                                     combo.fireEvent('select', [combo, combo.getValue()]);
                                 }, this, {single: true});
+
                             }
                         }
                     },'->',{

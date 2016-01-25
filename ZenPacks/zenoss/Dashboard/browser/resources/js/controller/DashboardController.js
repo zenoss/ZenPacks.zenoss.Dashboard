@@ -62,7 +62,7 @@
                 }
             });
         },
-        showEditPortletDialog: function(tool) {
+        showEditPortletDialog: function(tool){
             var portlet = tool.up('portlet');
             var win = Ext.create('Zenoss.Dashboard.view.EditPortletDialog', {
                 portlet: portlet,
@@ -78,24 +78,23 @@
             }, this, {single: true});
             win.show();
         },
-        showAddPortletDialog: function() {
-            var dashboard = this.getCurrentDashboard();
-            if (dashboard) {
-                var win = Ext.create('Zenoss.Dashboard.view.AddPortletDialog', {});
-                // save handler for the dialog
-                win.query('button')[0].on('click', function() {
-                    var portlet = win.getPortlet();
-                    // since the portlet will be destroyed
-                    // when the window is closed we need to save its properties
-                    // and readd it
-                    this.addPortlet(this.extractPortlet(portlet));
-                    this.saveDashboardState();
-                    win.close();
-                }, this, {single: true});
-                win.show();
-            }
+        showAddPortletDialog: function(){
+            var win = Ext.create('Zenoss.Dashboard.view.AddPortletDialog', {
+            });
+
+            // save handler for the dialog
+            win.query('button')[0].on('click', function() {
+                var portlet = win.getPortlet();
+                // since the portlet will be destroyed
+                // when the window is closed we need to save its properties
+                // and readd it
+                this.addPortlet(this.extractPortlet(portlet));
+                this.saveDashboardState();
+                win.close();
+            }, this, {single: true});
+            win.show();
         },
-        fullScreenPortlet: function(tool) {
+        fullScreenPortlet: function(tool){
             var portlet = this.extractPortlet(tool.up('portlet')), win;
             Ext.apply(portlet, {
                 height: '100%',
@@ -148,20 +147,18 @@
         },
         editSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard();
-            if (dashboard) {
-                var win = Ext.create('Zenoss.Dashboard.view.EditDashboardDialog', {
-                    dashboard: dashboard
-                });
-                win.on('savedashboard', function(params) {
-                    router.saveDashboard(params, function(response) {
-                        if (response.success) {
-                            win.close();
-                            this.reloadDashboards(response.data.id);
-                        }
-                    }, this);
+            var win = Ext.create('Zenoss.Dashboard.view.EditDashboardDialog', {
+                dashboard: dashboard
+            });
+            win.on('savedashboard', function(params){
+                router.saveDashboard(params, function(response){
+                    if (response.success) {
+                        win.close();
+                        this.reloadDashboards(response.data.id);
+                    }
                 }, this);
-                win.show();
-            }
+            }, this);
+            win.show();
         },
         getCurrentDashboard: function() {
             // look at what is selected
@@ -189,54 +186,45 @@
         },
         deleteSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard(), me = this;
-            if (dashboard) {
-                // make sure we always have the default dashboard
-                if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default") {
-                    new Zenoss.dialog.SimpleMessageDialog({
-                        message: _t("You can not delete the default Dashboard"),
-                        title: _t('Delete Dashboard'),
-                        buttons: [{
-                            xtype: 'DialogButton',
-                            text: _t('Close')
-                        }]
-                    }).show();
-                    return;
-                }
-
-                // prompt them to delete the dashboard
+            // make sure we always have the default dashboard
+            if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default") {
                 new Zenoss.dialog.SimpleMessageDialog({
-                    message: Ext.String.format(_t("Are you sure you want to delete the dashboard, {0} ?"), dashboard.get('id')),
+                    message: _t("You can not delete the default Dashboard"),
                     title: _t('Delete Dashboard'),
-                    width: 350,
                     buttons: [{
                         xtype: 'DialogButton',
-                        text: _t('OK'),
-                        handler: function() {
-                            Zenoss.remote.DashboardRouter.deleteDashboard({
-                                uid: dashboard.get('uid')
-                            }, function(result) {
-                                if (result.success) {
-                                    me.reloadDashboards();
-                                    var combo = me.getDashboardSelecter();
-                                    var store = combo.getStore();
-                                    store.remove(me.getCurrentDashboard());
-                                    // select the first dashboard
-                                    var dashboard = store.getAt(0);
-                                    if (dashboard) {
-                                        combo.setValue(dashboard.get('uid'));
-                                        me.renderCurrentDashboard();
-                                    } else {
-                                        combo.clearValue();
-                                    }
-                                }
-                            });
-                        }
-                    }, {
-                        xtype: 'DialogButton',
-                        text: _t('Cancel')
+                        text: _t('Close')
                     }]
                 }).show();
+                return;
             }
+
+            // prompt them to delete the dashboard
+            new Zenoss.dialog.SimpleMessageDialog({
+                message: Ext.String.format(_t("Are you sure you want to delete the dashboard, {0} ?"), dashboard.get('id')),
+                title: _t('Delete Dashboard'),
+                width: 350,
+                buttons: [{
+                    xtype: 'DialogButton',
+                    text: _t('OK'),
+                    handler: function() {
+                        Zenoss.remote.DashboardRouter.deleteDashboard({
+                            uid: dashboard.get('uid')
+                        }, function(){
+                            me.reloadDashboards();
+                            var combo = me.getDashboardSelecter();
+                            // select the first dashboard
+                            var dashboard = combo.getStore().getAt(0);
+                            combo.setValue(dashboard.get('uid'));
+                            me.renderCurrentDashboard();
+                        });
+                    }
+                }, {
+                    xtype: 'DialogButton',
+                    text: _t('Cancel')
+                }]
+            }).show();
+
         },
         /**
          * Persists the dashboard state to the server
@@ -311,38 +299,36 @@
          *
          **/
         renderCurrentDashboard: function() {
-            var dashboard = this.getCurrentDashboard();
-            if (dashboard) {
-                var panel = this.getDashboardPanel(), i,
-                    state = dashboard.get('state'), columns=[];
-                if (state) {
-                    columns = Ext.JSON.decode(state);
-                    if (columns.length !== dashboard.get('columns')) {
-                        columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
-                        this.saveDashboardState();
-                    }
-                } else {
-                    // if there is no state (it is a new dashboard or an empty one)
-                    // just add placeholders for the columns
-                    for (i=0; i<dashboard.get('columns'); i++) {
-                        columns.push({
-                            id: 'col-' + i.toString(),
-                            items: []
-                        });
-                    }
+            var dashboard = this.getCurrentDashboard(),
+                panel = this.getDashboardPanel(), i,
+                state = dashboard.get('state'), columns=[];
+            if (state) {
+                columns = Ext.JSON.decode(state);
+                if (columns.length !== dashboard.get('columns')) {
+                    columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
+                    this.saveDashboardState();
                 }
-                this.stripRemovedPortlets(columns);
-                Ext.suspendLayouts();
-                panel.removeAll();
-                panel.add(columns);
-                // disable resizing on all the portlets if we are locked
-                if (dashboard.get('locked')) {
-                    Ext.each(panel.query('portlet'), function(portlet){
-                        portlet.resizable = false;
+            } else {
+                // if there is no state (it is a new dashboard or an empty one)
+                // just add placeholders for the columns
+                for (i=0; i<dashboard.get('columns'); i++) {
+                    columns.push({
+                        id: 'col-' + i.toString(),
+                        items: []
                     });
                 }
-                Ext.resumeLayouts(true);
             }
+            this.stripRemovedPortlets(columns);
+            Ext.suspendLayouts();
+            panel.removeAll();
+            panel.add(columns);
+            // disable resizing on all the portlets if we are locked
+            if (dashboard.get('locked')) {
+                Ext.each(panel.query('portlet'), function(portlet){
+                    portlet.resizable = false;
+                });
+            }
+            Ext.resumeLayouts(true);
         },
         /**
          * If the portlet was removed then strip it from the state. Otherwise the
