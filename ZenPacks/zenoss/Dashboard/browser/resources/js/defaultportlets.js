@@ -628,6 +628,7 @@
                         dataIndex: 'productionState',
                         header: _t('Production State'),
                         hideable: false,
+                        tooltip: 'Production States Sorted by Numeric value in State Conversions defined in Settings',
                         renderer: function(value) {
                             return Zenoss.env.PRODUCTION_STATES_MAP[value];
                         }
