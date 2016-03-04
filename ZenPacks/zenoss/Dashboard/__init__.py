@@ -78,3 +78,16 @@ class ZenPack(ZenPackBase):
         log.info("Removing dashboard relationships on %s User Groups ", len(groups))
         for group in groups:
             group._delObject('dashboards')
+
+# With the old dashboard, there was only 1 and the portlets had access controls.
+# With this zenpack, there are multiple dashboards, and they have access controls.
+# The old screen for setting portlet access controls doesn't change anything on
+# the dashboards provided by this zenpack.
+from Products.ZenModel.DataRoot import DataRoot
+from Products.ZenModel.UserSettings import UserSettingsManager
+from Products.ZenModel.ZenossInfo import ZenossInfo
+from Products.ZenModel.ZenPackManager import ZenPackManager
+
+for klass in DataRoot, UserSettingsManager, ZenossInfo, ZenPackManager:
+    orig_actions = klass.factory_type_information[0]['actions']
+    klass.factory_type_information[0]['actions'] = tuple([act for act in orig_actions if act['id'] is not 'portlets'])
