@@ -12,13 +12,13 @@ from zope.component import getMultiAdapter
 from Products.Zuul.interfaces import IFacade, IInfo, ICatalogTool, template as templateInterfaces
 from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
-from Products.Zuul import getFacade
+from Products.Zuul import getFacade, checkPermission
 from Products.ZenModel.Device import Device
 from Products.ZenUtils import NetworkTree
 from Products.ZenModel.DataPointGraphPoint import DataPointGraphPoint
 from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
-from Products.ZenModel.ZenossSecurity import ZEN_VIEW
+from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_MANAGE_DMD
 from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
 from Products.AdvancedQuery import MatchRegexp
 
@@ -90,7 +90,7 @@ class DashboardFacade(ZuulFacade):
 
     def getAvailableDashboards(self):
         """
-        Available dashboards come from three places
+        Available dashboards come from three places. Managers can access all dashboards.
 
         1. Global (they are on dmd.ZenUsers)
         2. The User Groups current user belongs to
@@ -102,8 +102,13 @@ class DashboardFacade(ZuulFacade):
         # 1. Global Dashboards
         dashboards.extend([IInfo(d) for d in self._dmd.ZenUsers.dashboards()])
 
-        # 2. Dashboards defined on my groups
-        for name in user.getUserGroupSettingsNames():
+        # 2. Dashboards defined on my groups or all groups (if I'm manager)
+        if checkPermission(ZEN_MANAGE_DMD, self._dmd):
+            groupsNames = user.getAllGroupSettingsNames()
+        else:
+            groupsNames = user.getUserGroupSettingsNames()
+
+        for name in groupsNames:
             group = self._dmd.ZenUsers.getGroupSettings(name)
             dashboards.extend([IInfo(d) for d in group.dashboards()])
 
@@ -115,7 +120,13 @@ class DashboardFacade(ZuulFacade):
     def getCurrentUsersGroups(self):
         results = []
         user = self._dmd.ZenUsers.getUserSettings()
-        for name in user.getUserGroupSettingsNames():
+
+        if checkPermission(ZEN_MANAGE_DMD, self._dmd):
+            groupsNames = user.getAllGroupSettingsNames()
+        else:
+            groupsNames = user.getUserGroupSettingsNames()
+
+        for name in groupsNames:
             group = self._dmd.ZenUsers.getGroupSettings(name)
             results.append(dict(uid=group.getPrimaryId(), name=group.id))
         return results
