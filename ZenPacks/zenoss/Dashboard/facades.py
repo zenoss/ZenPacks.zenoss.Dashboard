@@ -137,8 +137,13 @@ class DashboardFacade(ZuulFacade):
 
     def getSubOrganizers(self, uid):
         results = []
-        obj = self._getObject(uid or "/zport/dmd")
-        searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        PATHS = ("/zport/dmd/Devices", "/zport/dmd/Locations", "/zport/dmd/Groups", "/zport/dmd/Systems",)
+        uid = uid or "/zport/dmd"
+        obj = self._getObject(uid)
+        if uid == "/zport/dmd":
+            searchresults = ICatalogTool(obj).search(DeviceOrganizer, paths=PATHS)
+        else:
+            searchresults = ICatalogTool(obj).search(DeviceOrganizer)
         if isinstance(obj, DeviceOrganizer):
             info = IInfo(obj)
             info.fullOrganizerName = self._getFullOrganizerName(obj)
