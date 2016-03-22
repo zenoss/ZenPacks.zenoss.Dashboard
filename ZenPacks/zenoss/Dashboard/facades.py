@@ -22,6 +22,9 @@ from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_MANAGE_DMD
 from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
 from Products.AdvancedQuery import MatchRegexp
 
+ZPORT_DMD = "/zport/dmd"
+PATHS = ("/zport/dmd/Devices", "/zport/dmd/Locations", "/zport/dmd/Groups", "/zport/dmd/Systems",)
+
 class IDashboardFacade(IFacade):
     """
     A facade for the dashboards
@@ -137,10 +140,9 @@ class DashboardFacade(ZuulFacade):
 
     def getSubOrganizers(self, uid):
         results = []
-        PATHS = ("/zport/dmd/Devices", "/zport/dmd/Locations", "/zport/dmd/Groups", "/zport/dmd/Systems",)
-        uid = uid or "/zport/dmd"
+        uid = uid or ZPORT_DMD
         obj = self._getObject(uid)
-        if uid == "/zport/dmd":
+        if uid == ZPORT_DMD:
             searchresults = ICatalogTool(obj).search(DeviceOrganizer, paths=PATHS)
         else:
             searchresults = ICatalogTool(obj).search(DeviceOrganizer)
@@ -161,7 +163,7 @@ class DashboardFacade(ZuulFacade):
 
     def getTopLevelOrganizers(self, uid):
         results = []
-        obj = self._getObject(uid or "/zport/dmd")
+        obj = self._getObject(uid or ZPORT_DMD)
         searchresults = ICatalogTool(obj).search(DeviceOrganizer)
         for brain in searchresults:
             try:
