@@ -347,7 +347,7 @@
                 Ext.suspendLayouts();
                 panel.removeAll();
                 panel.add(columns);
-                // disable resizing on all the portlets if we are locked
+                // disable editing features on all the portlets if we are locked
                 if (dashboard.get('locked')) {
                     Ext.each(panel.query('portlet'), function(portlet){
                         portlet.lock()
