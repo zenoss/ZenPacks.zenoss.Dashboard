@@ -6,6 +6,9 @@
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
+
+import itertools
+
 from Acquisition import aq_base
 from zope.interface import implements
 from zope.component import getMultiAdapter
@@ -185,7 +188,10 @@ class DashboardFacade(ZuulFacade):
             queryResults = self._dmd.Devices.deviceSearch.evalAdvancedQuery(MatchRegexp("titleOrId", ".*" + query + ".*"))
         else:
             queryResults = self._dmd.Devices.deviceSearch()
-        results.extend([IInfo(o.getObject()) for o in queryResults[:50]])
+
+        devices = (obj.getObject() for obj in queryResults)
+        devices = (IInfo(dev) for dev in devices if dev.checkRemotePerm(ZEN_VIEW, dev))
+        results.extend(itertools.islice(devices, 50))
         return results
 
     def getDeviceIssues(self):
