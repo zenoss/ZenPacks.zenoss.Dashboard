@@ -10,6 +10,20 @@
 (function() {
     Ext.ns('Zenoss.Dashboard');
     Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://www2.zenoss.com/in-app-welcome";
+    Zenoss.Dashboard.PortletLockedTools = [{
+            xtype: 'tool',
+            itemId: 'fullscreenPortlet',
+            type: 'restore'
+        }]
+    Zenoss.Dashboard.PortletUnlockedTools = [{
+            xtype: 'tool',
+            itemId: 'fullscreenPortlet',
+            type: 'restore'
+        },{
+            xtype: 'tool',
+            itemId: 'editPortlet',
+            type: 'gear'
+        }]
 
     /**
      *  Returns the first non argument to this function. So
@@ -75,15 +89,7 @@
             moveOnDrag: false
         },
         cls: 'x-portlet',
-        tools: [{
-            xtype: 'tool',
-            itemId: 'fullscreenPortlet',
-            type: 'restore'
-        },{
-            xtype: 'tool',
-            itemId: 'editPortlet',
-            type: 'gear'
-        }],
+        tools: Zenoss.Dashboard.PortletUnlockedTools,
         // defeault to refresh every 5 minutes
         refreshInterval: 300,
         // Override Panel's default doClose to provide a custom fade out effect
@@ -211,7 +217,19 @@
             // by default apply all the config properties to this object
             Ext.apply(this, config);
             this.fireEvent('applyconfig', this);
-        }
+        },
+	lock: function() {
+	    this.resizable = false
+	    this.collapsible = false
+	    this.closable = false
+	    Ext.apply(this, {tools: Zenoss.Dashboard.PortletLockedTools})
+	},
+	unlock: function() {
+	    this.resizable = true
+	    this.collapsible = true
+	    this.closable = true
+	    Ext.apply(this, {tools: Zenoss.Dashboard.PortletUnlockedTools})
+	}
     });
 
 
