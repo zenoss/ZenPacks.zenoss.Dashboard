@@ -1616,7 +1616,7 @@
     Ext.define('Zenoss.Dashboard.portlets.TopLevelOrganizersPortlet', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.toplevelorganizersportlet',
-        title: _t('Top Level Organizers'),
+        title: _t('Organizers'),
         height: 400,
         rootOrganizer: '',
         childOrganizer: '',

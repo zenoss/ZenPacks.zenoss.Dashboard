@@ -171,8 +171,6 @@ class DashboardFacade(ZuulFacade):
         for brain in searchresults:
             try:
                 org = brain.getObject()
-                if org.children():
-                    continue
                 info = IInfo(org)
                 info.fullOrganizerName = self._getFullOrganizerName(org)
                 results.append(info)
