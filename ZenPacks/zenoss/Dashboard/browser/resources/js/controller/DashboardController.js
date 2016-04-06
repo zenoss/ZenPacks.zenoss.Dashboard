@@ -74,10 +74,8 @@
                 var updatedConfig = win.getFormValues();
                 if(win.down('portlet').xtype === "watchlistportlet") {
                     updatedConfig = win.down('grid').getStore().data.items;
-                    portlet.applyConfig(updatedConfig);
-                } else {
-                    portlet.applyConfig(updatedConfig);
-                }
+                    }
+                portlet.applyConfig(updatedConfig);
                 this.saveDashboardState();
                 win.close();
             }, this, {single: true});
