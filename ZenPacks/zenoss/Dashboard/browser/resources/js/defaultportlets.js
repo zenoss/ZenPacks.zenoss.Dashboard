@@ -808,14 +808,14 @@
                 var grid = this.down('grid');
                 if (typeof config.title === "undefined") {
                     var uids = [];
-                    for (var i = 0; i< config.length; i++){
+                    for (var i = 0; i < config.length; i++) {
                         uids.push(config[i].internalId);
                     }
                     this.uids = uids;
                     grid.getStore().setBaseParam('uids', this.uids);
                     grid.getStore().load();
                 } else {
-                grid.getStore().load();
+                    grid.getStore().load();
                 }
 
             }

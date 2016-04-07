@@ -72,9 +72,9 @@
             // save handler for the dialog
             win.query('button[ref="submitButton"]')[0].on('click', function() {
                 var updatedConfig = win.getFormValues();
-                if(win.down('portlet').xtype === "watchlistportlet") {
+                if (win.down('portlet').xtype === "watchlistportlet") {
                     updatedConfig = win.down('grid').getStore().data.items;
-                    }
+                }
                 portlet.applyConfig(updatedConfig);
                 this.saveDashboardState();
                 win.close();
