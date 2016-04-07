@@ -846,7 +846,9 @@
                 text: _t('Add'),
                 handler: function(btn) {
                     var combo = btn.up('form').down('combo[itemId="organizerCombo"]');
-                    me.uids.push(combo.getValue());
+                    if (typeof combo.getValue() !== 'undefined' && combo.getValue() !== null) {
+                        me.uids.push(combo.getValue());
+                    }
                     var grid = btn.up('window').down('grid');
                     grid.getStore().setBaseParam('uids', me.uids);
                     grid.getStore().load();
