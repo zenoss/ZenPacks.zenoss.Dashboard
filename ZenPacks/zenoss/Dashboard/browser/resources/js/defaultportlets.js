@@ -1456,7 +1456,7 @@
                     .attr("transform", "translate(" + -nodeWidth/2 + ", " + -nodeHeight/2 + ")")
                     .attr("rx", 10)
                     .attr("ry", 10)
-                    .attr("stroke", function(d){ return d.color; });
+                    .attr("style", function(d){ return "fill:#" + d.color.slice(2);});
 
                 nodeContainer.append("text")
                     .text(function(d){ return d.id; })
