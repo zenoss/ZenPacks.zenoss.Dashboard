@@ -784,7 +784,9 @@
                             // update the store params
                             store.setBaseParam('uids', me.uids);
                             store.remove(record);
-                            window.globalApp.getController("DashboardController").saveDashboardState();
+                            if (!grid.up("window")) {
+                                window.globalApp.getController("DashboardController").saveDashboardState();
+                            }
                         },
                         align: "center",
                         text: _t('Remove'),
@@ -806,12 +808,8 @@
         applyConfig: function(config) {
             if (this.rendered) {
                 var grid = this.down('grid');
-                if (typeof config.title === "undefined") {
-                    var uids = [];
-                    for (var i = 0; i < config.length; i++) {
-                        uids.push(config[i].internalId);
-                    }
-                    this.uids = uids;
+                if (config.previewConfig) {
+                    this.uids = config.previewConfig.uids;
                     grid.getStore().setBaseParam('uids', this.uids);
                     grid.getStore().load();
                 } else {

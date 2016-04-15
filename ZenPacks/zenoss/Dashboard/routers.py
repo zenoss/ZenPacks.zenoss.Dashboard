@@ -12,6 +12,7 @@ from Products.Zuul.interfaces import IInfo
 from Products.Zuul.decorators import require
 from Products.ZenUtils.Ext import DirectResponse
 from Products.ZenMessaging.audit import audit
+from Products.ZenModel.ZenossSecurity import ZEN_VIEW
 
 
 class DashboardRouter(DirectRouter):
@@ -91,7 +92,8 @@ class DashboardRouter(DirectRouter):
 
     def getInfos(self, uids, keys):
         facade = self._getFacade()
-        infos = [IInfo(facade._getObject(uid)) for uid in uids]
+        devices = [facade._getObject(uid) for uid in uids]
+        infos = [IInfo(dev) for dev in devices if dev.checkRemotePerm(ZEN_VIEW, dev)]
         return DirectResponse.succeed(data=Zuul.marshal(infos, keys=keys))
 
     def getDeviceClassGraphPoints(self, deviceClass):
