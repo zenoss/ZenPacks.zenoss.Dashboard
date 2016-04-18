@@ -263,23 +263,26 @@ class DashboardFacade(ZuulFacade):
         nodes = []
         links = []
         for a, b in edges:
-            node1 =  {
-                'id': a[0],
-                'prop': a[0],
-                'icon': a[1],
-                'color': a[2]
-            }
-            node2 = {
-                'id': b[0],
-                'prop': b[0],
-                'icon': b[1],
-                'color': b[2]
-            }
-            link = {
-                'source': a[0],
-                'target': b[0]
-            }
-            if node1 not in nodes: nodes.append(node1)
-            if node2 not in nodes: nodes.append(node2)
-            if link not in links: links.append(link)
+            device = self._dmd.Devices.findDevice(b[0])
+            if device.checkRemotePerm(ZEN_VIEW, device):
+                node1 =  {
+                    'id': a[0],
+                    'prop': a[0],
+                    'icon': a[1],
+                    'color': a[2]
+                }
+                node2 = {
+                    'id': b[0],
+                    'prop': b[0],
+                    'icon': b[1],
+                    'color': b[2]
+                }
+                link = {
+                    'source': a[0],
+                    'target': b[0]
+                }
+                if node1 not in nodes: nodes.append(node1)
+                if node2 not in nodes: nodes.append(node2)
+                if link not in links: links.append(link)
+
         return dict(links=links, nodes=nodes)
