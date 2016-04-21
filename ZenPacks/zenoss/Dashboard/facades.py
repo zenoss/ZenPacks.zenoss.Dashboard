@@ -6,21 +6,27 @@
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
+
+import itertools
+
 from Acquisition import aq_base
 from zope.interface import implements
 from zope.component import getMultiAdapter
 from Products.Zuul.interfaces import IFacade, IInfo, ICatalogTool, template as templateInterfaces
 from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
-from Products.Zuul import getFacade
+from Products.Zuul import getFacade, checkPermission
 from Products.ZenModel.Device import Device
 from Products.ZenUtils import NetworkTree
 from Products.ZenModel.DataPointGraphPoint import DataPointGraphPoint
 from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
-from Products.ZenModel.ZenossSecurity import ZEN_VIEW
+from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_MANAGE_DMD
 from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
 from Products.AdvancedQuery import MatchRegexp
+
+ZPORT_DMD = "/zport/dmd"
+PATHS = ("/zport/dmd/Devices", "/zport/dmd/Locations", "/zport/dmd/Groups", "/zport/dmd/Systems",)
 
 class IDashboardFacade(IFacade):
     """
@@ -90,7 +96,7 @@ class DashboardFacade(ZuulFacade):
 
     def getAvailableDashboards(self):
         """
-        Available dashboards come from three places
+        Available dashboards come from three places. Managers can access all dashboards.
 
         1. Global (they are on dmd.ZenUsers)
         2. The User Groups current user belongs to
@@ -102,8 +108,13 @@ class DashboardFacade(ZuulFacade):
         # 1. Global Dashboards
         dashboards.extend([IInfo(d) for d in self._dmd.ZenUsers.dashboards()])
 
-        # 2. Dashboards defined on my groups
-        for name in user.getUserGroupSettingsNames():
+        # 2. Dashboards defined on my groups or all groups (if I'm manager)
+        if checkPermission(ZEN_MANAGE_DMD, self._dmd):
+            groupsNames = user.getAllGroupSettingsNames()
+        else:
+            groupsNames = user.getUserGroupSettingsNames()
+
+        for name in groupsNames:
             group = self._dmd.ZenUsers.getGroupSettings(name)
             dashboards.extend([IInfo(d) for d in group.dashboards()])
 
@@ -115,7 +126,13 @@ class DashboardFacade(ZuulFacade):
     def getCurrentUsersGroups(self):
         results = []
         user = self._dmd.ZenUsers.getUserSettings()
-        for name in user.getUserGroupSettingsNames():
+
+        if checkPermission(ZEN_MANAGE_DMD, self._dmd):
+            groupsNames = user.getAllGroupSettingsNames()
+        else:
+            groupsNames = user.getUserGroupSettingsNames()
+
+        for name in groupsNames:
             group = self._dmd.ZenUsers.getGroupSettings(name)
             results.append(dict(uid=group.getPrimaryId(), name=group.id))
         return results
@@ -126,8 +143,12 @@ class DashboardFacade(ZuulFacade):
 
     def getSubOrganizers(self, uid):
         results = []
-        obj = self._getObject(uid or "/zport/dmd")
-        searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        uid = uid or ZPORT_DMD
+        obj = self._getObject(uid)
+        if uid == ZPORT_DMD:
+            searchresults = ICatalogTool(obj).search(DeviceOrganizer, paths=PATHS)
+        else:
+            searchresults = ICatalogTool(obj).search(DeviceOrganizer)
         if isinstance(obj, DeviceOrganizer):
             info = IInfo(obj)
             info.fullOrganizerName = self._getFullOrganizerName(obj)
@@ -145,13 +166,11 @@ class DashboardFacade(ZuulFacade):
 
     def getTopLevelOrganizers(self, uid):
         results = []
-        obj = self._getObject(uid or "/zport/dmd")
+        obj = self._getObject(uid or ZPORT_DMD)
         searchresults = ICatalogTool(obj).search(DeviceOrganizer)
         for brain in searchresults:
             try:
                 org = brain.getObject()
-                if org.children():
-                    continue
                 info = IInfo(org)
                 info.fullOrganizerName = self._getFullOrganizerName(org)
                 results.append(info)
@@ -167,7 +186,10 @@ class DashboardFacade(ZuulFacade):
             queryResults = self._dmd.Devices.deviceSearch.evalAdvancedQuery(MatchRegexp("titleOrId", ".*" + query + ".*"))
         else:
             queryResults = self._dmd.Devices.deviceSearch()
-        results.extend([IInfo(o.getObject()) for o in queryResults[:50]])
+
+        devices = (obj.getObject() for obj in queryResults)
+        devices = (IInfo(dev) for dev in devices if dev.checkRemotePerm(ZEN_VIEW, dev))
+        results.extend(itertools.islice(devices, 50))
         return results
 
     def getDeviceIssues(self):
@@ -241,23 +263,26 @@ class DashboardFacade(ZuulFacade):
         nodes = []
         links = []
         for a, b in edges:
-            node1 =  {
-                'id': a[0],
-                'prop': a[0],
-                'icon': a[1],
-                'color': a[2]
-            }
-            node2 = {
-                'id': b[0],
-                'prop': b[0],
-                'icon': b[1],
-                'color': b[2]
-            }
-            link = {
-                'source': a[0],
-                'target': b[0]
-            }
-            if node1 not in nodes: nodes.append(node1)
-            if node2 not in nodes: nodes.append(node2)
-            if link not in links: links.append(link)
+            device = self._dmd.Devices.findDevice(b[0])
+            if device.checkRemotePerm(ZEN_VIEW, device):
+                node1 =  {
+                    'id': a[0],
+                    'prop': a[0],
+                    'icon': a[1],
+                    'color': a[2]
+                }
+                node2 = {
+                    'id': b[0],
+                    'prop': b[0],
+                    'icon': b[1],
+                    'color': b[2]
+                }
+                link = {
+                    'source': a[0],
+                    'target': b[0]
+                }
+                if node1 not in nodes: nodes.append(node1)
+                if node2 not in nodes: nodes.append(node2)
+                if link not in links: links.append(link)
+
         return dict(links=links, nodes=nodes)

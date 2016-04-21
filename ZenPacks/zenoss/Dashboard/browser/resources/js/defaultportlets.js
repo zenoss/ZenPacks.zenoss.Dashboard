@@ -10,6 +10,20 @@
 (function() {
     Ext.ns('Zenoss.Dashboard');
     Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://www2.zenoss.com/in-app-welcome";
+    Zenoss.Dashboard.PortletLockedTools = [{
+            xtype: 'tool',
+            itemId: 'fullscreenPortlet',
+            type: 'restore'
+        }]
+    Zenoss.Dashboard.PortletUnlockedTools = [{
+            xtype: 'tool',
+            itemId: 'fullscreenPortlet',
+            type: 'restore'
+        },{
+            xtype: 'tool',
+            itemId: 'editPortlet',
+            type: 'gear'
+        }]
 
     /**
      *  Returns the first non argument to this function. So
@@ -75,15 +89,7 @@
             moveOnDrag: false
         },
         cls: 'x-portlet',
-        tools: [{
-            xtype: 'tool',
-            itemId: 'fullscreenPortlet',
-            type: 'restore'
-        },{
-            xtype: 'tool',
-            itemId: 'editPortlet',
-            type: 'gear'
-        }],
+        tools: Zenoss.Dashboard.PortletUnlockedTools,
         // defeault to refresh every 5 minutes
         refreshInterval: 300,
         // Override Panel's default doClose to provide a custom fade out effect
@@ -211,7 +217,19 @@
             // by default apply all the config properties to this object
             Ext.apply(this, config);
             this.fireEvent('applyconfig', this);
-        }
+        },
+	lock: function() {
+	    this.resizable = false
+	    this.collapsible = false
+	    this.closable = false
+	    Ext.apply(this, {tools: Zenoss.Dashboard.PortletLockedTools})
+	},
+	unlock: function() {
+	    this.resizable = true
+	    this.collapsible = true
+	    this.closable = true
+	    Ext.apply(this, {tools: Zenoss.Dashboard.PortletUnlockedTools})
+	}
     });
 
 
@@ -766,6 +784,9 @@
                             // update the store params
                             store.setBaseParam('uids', me.uids);
                             store.remove(record);
+                            if (!grid.up("window")) {
+                                window.globalApp.getController("DashboardController").saveDashboardState();
+                            }
                         },
                         align: "center",
                         text: _t('Remove'),
@@ -787,8 +808,11 @@
         applyConfig: function(config) {
             if (this.rendered) {
                 var grid = this.down('grid');
-                if (config.uids && config.uids !== this.uids) {
-                    grid.getStore().setBaseParam('uids', config.uids);
+                if (config.previewConfig) {
+                    this.uids = config.previewConfig.uids;
+                    grid.getStore().setBaseParam('uids', this.uids);
+                    grid.getStore().load();
+                } else {
                     grid.getStore().load();
                 }
 
@@ -828,8 +852,10 @@
                 text: _t('Add'),
                 handler: function(btn) {
                     var combo = btn.up('form').down('combo[itemId="organizerCombo"]');
-                    me.uids.push(combo.getValue());
-                    var grid = me.down('grid');
+                    if (typeof combo.getValue() !== 'undefined' && combo.getValue() !== null) {
+                        me.uids.push(combo.getValue());
+                    }
+                    var grid = btn.up('window').down('grid');
                     grid.getStore().setBaseParam('uids', me.uids);
                     grid.getStore().load();
                 }
@@ -1428,7 +1454,7 @@
                     .attr("transform", "translate(" + -nodeWidth/2 + ", " + -nodeHeight/2 + ")")
                     .attr("rx", 10)
                     .attr("ry", 10)
-                    .attr("stroke", function(d){ return d.color; });
+                    .attr("style", function(d){ return "fill:#" + d.color.slice(2);});
 
                 nodeContainer.append("text")
                     .text(function(d){ return d.id; })
@@ -1598,7 +1624,7 @@
     Ext.define('Zenoss.Dashboard.portlets.TopLevelOrganizersPortlet', {
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.toplevelorganizersportlet',
-        title: _t('Top Level Organizers'),
+        title: _t('Organizers'),
         height: 400,
         rootOrganizer: '',
         childOrganizer: '',

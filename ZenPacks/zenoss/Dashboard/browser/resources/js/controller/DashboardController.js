@@ -72,6 +72,7 @@
             // save handler for the dialog
             win.query('button[ref="submitButton"]')[0].on('click', function() {
                 var updatedConfig = win.getFormValues();
+                updatedConfig.previewConfig = win.down("portlet").getConfig();
                 portlet.applyConfig(updatedConfig);
                 this.saveDashboardState();
                 win.close();
@@ -81,6 +82,17 @@
         showAddPortletDialog: function() {
             var dashboard = this.getCurrentDashboard();
             if (dashboard) {
+                if (dashboard.get('locked')) {
+                    new Zenoss.dialog.SimpleMessageDialog({
+                        message: _t("You cannot add a Portlet while the Dashboard is locked."),
+                        title: _t('Locked Dashboard'),
+                        buttons: [{
+                            xtype: 'DialogButton',
+                            text: _t('Close')
+                        }]
+                    }).show();
+		    return;
+		}
                 var win = Ext.create('Zenoss.Dashboard.view.AddPortletDialog', {});
                 // save handler for the dialog
                 win.query('button')[0].on('click', function() {
@@ -335,10 +347,10 @@
                 Ext.suspendLayouts();
                 panel.removeAll();
                 panel.add(columns);
-                // disable resizing on all the portlets if we are locked
+                // disable editing features on all the portlets if we are locked
                 if (dashboard.get('locked')) {
                     Ext.each(panel.query('portlet'), function(portlet){
-                        portlet.resizable = false;
+                        portlet.lock()
                     });
                 }
                 Ext.resumeLayouts(true);
