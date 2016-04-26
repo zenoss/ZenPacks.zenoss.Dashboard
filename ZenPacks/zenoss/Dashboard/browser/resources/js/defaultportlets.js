@@ -584,7 +584,10 @@
                     columns: [{
                         dataIndex:'host',
                         header: _t('Host'),
-                        width: 120
+                        width: 120,
+                        renderer: function(url) {
+                            return Ext.String.format("{0}", url);
+                        }
                     },{
                         dataIndex: 'process',
                         header: _t('Daemon Process'),
