@@ -766,6 +766,9 @@
                             // update the store params
                             store.setBaseParam('uids', me.uids);
                             store.remove(record);
+                            if (!grid.up("window")) {
+                                window.globalApp.getController("DashboardController").saveDashboardState();
+                            }
                         },
                         align: "center",
                         text: _t('Remove'),
