@@ -899,6 +899,7 @@
         eventClass: "/",
         summaryFilter: "",
         daysPast: 3,
+        ignoreAcknowledge: false,
         initComponent: function(){
             Ext.applyIf(this, {
                 items:[{
@@ -991,14 +992,19 @@
             // gets all the open events for now
             var start = new Date(), params;
             start.setDate(start.getDate() - this.daysPast);
-
+            
+            var evt_state = [Zenoss.STATUS_NEW];
+            if (this.ignoreAcknowledge == false){
+                evt_state.push(Zenoss.STATUS_ACKNOWLEDGED);
+            }
+            
             params = {
                 start: 0,
                 limit: 500,
                 keys: ['severity'],
                 params: {
                     eventClass: this.eventClass,
-                    eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
+                    eventState: evt_state,
                     // format a time range Zep can understand
                     lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
                     summary: this.summaryFilter
@@ -1036,12 +1042,13 @@
             return {
                 eventClass: this.eventClass,
                 summaryFilter: this.summaryFilter,
-                daysPast: this.daysPast
+                daysPast: this.daysPast,
+                ignoreAcknowledge: this.ignoreAcknowledge
             };
         },
         applyConfig: function(config) {
             var refresh = false;
-            if (config.eventClass !== this.eventClass || config.summaryFilter !== this.summaryFilter || config.daysPast !== this.daysPast) {
+            if (config.eventClass !== this.eventClass || config.summaryFilter !== this.summaryFilter || config.daysPast !== this.daysPast || config.ignoreAcknowledge !== this.ignoreAcknowledge) {
                 refresh = true;
             }
             this.callParent([config]);
@@ -1069,6 +1076,11 @@
                 fieldLabel: _t('Number of past days to show events for'),
                 name: 'daysPast',
                 value: this.daysPast
+            }, {
+                xtype: 'checkboxfield',
+                fieldLabel: _t('Ignore acknowledge'),
+                name: 'ignoreAcknowledge',
+                checked: this.ignoreAcknowledge
             }];
             return fields;
         }
