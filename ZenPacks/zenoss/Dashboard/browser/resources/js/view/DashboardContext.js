@@ -41,7 +41,7 @@
                     boxLabel: _t('Just me'),
                     checked: context === "current_user",
                     itemId: 'justme',
-                    disabled: ifDefaultDashboard || false
+                    disabled: ifDefaultDashboard
                 }, {
                     xtype: 'container',
                     layout: 'hbox',
