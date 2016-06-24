@@ -18,6 +18,7 @@
             var context = "current_user";
             if (Ext.isDefined(config.dashboard)) {
                 context = config.dashboard.get('contextType');
+                ifDefaultDashboard = config.dashboard.get('id') === 'default';
             }
 
             Ext.applyIf(config, {
@@ -38,7 +39,8 @@
                     name: 'uid',
                     boxLabel: _t('Just me'),
                     checked: context === "current_user",
-                    itemId: 'justme'
+                    itemId: 'justme',
+                    disabled: ifDefaultDashboard || false
                 }, {
                     xtype: 'container',
                     layout: 'hbox',
