@@ -17,6 +17,7 @@
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.devicechartportlet',
         height: 500,
+        overflowY: 'auto',
         title: 'Device Chart',
         deviceClass: '/',
         graphPoints: [],
