@@ -206,7 +206,7 @@
                 }
             }
             if (config.title) {
-                this.setTitle(config.title);
+                this.setTitle(Ext.htmlEncode(config.title));
             }
 
             // update the refresh interval
