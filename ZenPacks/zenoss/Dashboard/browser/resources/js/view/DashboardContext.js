@@ -16,8 +16,10 @@
             // create a radio button with three different options
             config = config || {};
             var context = "current_user";
+            var ifDefaultDashboard = false;
             if (Ext.isDefined(config.dashboard)) {
                 context = config.dashboard.get('contextType');
+                ifDefaultDashboard = config.dashboard.get('id') === 'default';
             }
 
             Ext.applyIf(config, {
@@ -38,7 +40,8 @@
                     name: 'uid',
                     boxLabel: _t('Just me'),
                     checked: context === "current_user",
-                    itemId: 'justme'
+                    itemId: 'justme',
+                    disabled: ifDefaultDashboard
                 }, {
                     xtype: 'container',
                     layout: 'hbox',
