@@ -838,6 +838,7 @@
                 queryMode: 'remote',
                 displayField: 'fullOrganizerName',
                 valueField: 'uid',
+                tpl: '<tpl for=".">'+'<div class="x-boundlist-item">'+'{fullOrganizerName:htmlEncode}'+'</div>'+'</tpl>',
                 listConfig: {
                     resizable: true
                 },
