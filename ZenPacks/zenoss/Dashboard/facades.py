@@ -76,7 +76,7 @@ class DashboardFacade(ZuulFacade):
 
         # 2. move object if context changed
         newContext = self._getContext(data['contextUid'])
-        if data['uid'] == "/zport/dmd/ZenUsers/dashboards/default" and data['contextUid'] != "/zport/dmd/ZenUsers":
+        if uid == "/zport/dmd/ZenUsers/dashboards/default" and data['contextUid'] != "/zport/dmd/ZenUsers":
             raise Exception("Can't assign default portlet to the user %s", newContext)
         del data['contextUid']
         if newContext != d.getContext():
