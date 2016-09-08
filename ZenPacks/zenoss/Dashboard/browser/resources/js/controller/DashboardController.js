@@ -279,7 +279,7 @@
         },
         extractPortlet: function(portlet) {
             var portletProperties = {
-                title: portlet.getTitle(),
+                title: Ext.htmlEncode(portlet.getTitle()),
                 refreshInterval: portlet.refreshInterval,
                 config: portlet.getConfig(),
                 xtype: portlet.getXType(),
@@ -308,6 +308,7 @@
                 portlets = column.query('portlet');
                 for (j=0; j < portlets.length; j++) {
                     portlet = portlets[j];
+                    portlet.title = Ext.htmlDecode(portlet.title);
                     items.push(this.extractPortlet(portlet));
                 }
                 state.push({
