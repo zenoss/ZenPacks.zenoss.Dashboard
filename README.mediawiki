@@ -40,13 +40,13 @@ The following, default portlets are defined by this ZenPack:
 * And more...
 
 == Permissions ==
-* There are no owner-level permissions associated with dashboard objects. Any user may edit a dashboard if they have "Change Device" permission.
-* Users with "Add DMD Objects" permission may add a dashboard.
-* User with "Delete Objects" permission may remove a dashboard.
+* All users are able to create their own dashboards to view objects that they are authorized to see. This includes users with the "ZenUser" role or even no global role.
+* All users in user groups are able to edit, add and remove portlets and edit dashboards that are in their Group visibility level.
+* The default dashboard is readonly for users that have no "Manage DMD" permission.
+* Only Manager are able to edit default dashboard. For all other users the default dashboard is readonly.
+* All users are able to edit, add and remove portlets and edit dashboard that is in Global visibility level. Only Owner and Manager are able to remove Global dashboards.
 * Permissions are checked both on the client and server.
 * If the Audit ZenPack is installed, all operations on dashboards are audited.
-
-The "Add DMD Objects" and "Delete Objects" permissions are are global roles; the context of dashboard objects can not have permissions applied to them.
 
 == Writing a new Portlet ==
 
