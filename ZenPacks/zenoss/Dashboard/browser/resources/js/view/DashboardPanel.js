@@ -443,7 +443,6 @@
                     },'->',{
                         xtype: 'button',
                         iconCls:'add',
-                        hidden: Zenoss.Security.doesNotHavePermission('Add DMD Objects'),
                         menu: [{
                             text: _t('Add Portlet'),
                             itemId: 'newPortlet'
@@ -454,12 +453,10 @@
                     },{
                         xtype:'button',
                         iconCls:'delete',
-                        hidden: Zenoss.Security.doesNotHavePermission('Delete objects'),
                         itemId: 'deleteDashboard'
                     },{
                         xtype: 'button',
                         iconCls: 'customize',
-                        hidden: Zenoss.Security.doesNotHavePermission('Change Device'),
                         itemId: 'editDashboard'
                     }]
                 }],
