@@ -12,7 +12,8 @@ from Products.Zuul.interfaces import IInfo
 from Products.Zuul.decorators import require
 from Products.ZenUtils.Ext import DirectResponse
 from Products.ZenMessaging.audit import audit
-from Products.ZenModel.ZenossSecurity import ZEN_VIEW
+from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_DELETE
+from AccessControl import getSecurityManager
 
 
 class DashboardRouter(DirectRouter):
@@ -25,25 +26,25 @@ class DashboardRouter(DirectRouter):
         results = facade.getAvailableDashboards()
         return DirectResponse.succeed(data=Zuul.marshal(results))
 
-    @require('Add DMD Objects')
     def addDashboard(self, newId, uid, columns, state=None):
         facade = self._getFacade()
         result = facade.addDashboard(newId, uid, columns, state)
         audit('UI.Dashboard.Add', uid, newId=newId)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
-    @require('Delete objects')
     def deleteDashboard(self, uid):
+        user = getSecurityManager().getUser()
         facade = self._getFacade()
         obj = facade._getObject(uid)
         # can't delete the default dashboard
         if obj.getPrimaryId() == "/zport/dmd/ZenUsers/dashboards/default":
             return
+        if obj.owner != user.getId() and not Zuul.checkPermission(ZEN_DELETE, facade.context):
+            raise Exception("You have no permission to delete this dashboard")
         result = facade.deleteObject(uid)
         audit('UI.Dashboard.Remove', uid)
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
-    @require('Change Device')
     def saveDashboard(self, **data):
         facade = self._getFacade()
         result = facade.saveDashboard(data)
