@@ -93,6 +93,18 @@
                     }).show();
 		    return;
 		}
+            if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default" &&
+                Zenoss.Security.doesNotHavePermission('Manage DMD')) {
+                new Zenoss.dialog.SimpleMessageDialog({
+                    message: _t("You can not add a Portlet to the default Dashboard"),
+                    title: _t('Add portlet'),
+                    buttons: [{
+                        xtype: 'DialogButton',
+                        text: _t('Close')
+                    }]
+                }).show();
+                return;
+            }
                 var win = Ext.create('Zenoss.Dashboard.view.AddPortletDialog', {});
                 // save handler for the dialog
                 win.query('button')[0].on('click', function() {
@@ -161,6 +173,18 @@
         editSelectedDashboard: function() {
             var dashboard = this.getCurrentDashboard();
             if (dashboard) {
+                if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default" &&
+                    Zenoss.Security.doesNotHavePermission('Manage DMD')) {
+                    new Zenoss.dialog.SimpleMessageDialog({
+                        message: _t("You can not edit the default Dashboard"),
+                        title: _t('Edit Dashboard'),
+                        buttons: [{
+                            xtype: 'DialogButton',
+                            text: _t('Close')
+                        }]
+                    }).show();
+                    return;
+                }
                 var win = Ext.create('Zenoss.Dashboard.view.EditDashboardDialog', {
                     dashboard: dashboard
                 });
@@ -255,10 +279,11 @@
          **/
         saveDashboardState: function() {
             var dashboard = this.getCurrentDashboard(),
-                state = this.getCurrentDashboardState();
+                state = this.getCurrentDashboardState(),
+                panel = this.getDashboardPanel();
 
             // if the dashboard is locked then do not update the server with a new state
-            if (dashboard.get('locked')) {
+            if (dashboard.get('locked') || panel.query('portlet')[0].resizable === false) {
                 return;
             }
 
@@ -350,6 +375,14 @@
                 panel.add(columns);
                 // disable editing features on all the portlets if we are locked
                 if (dashboard.get('locked')) {
+                    Ext.each(panel.query('portlet'), function(portlet){
+                        portlet.lock()
+                    });
+                }
+                // disable editing features on all the portlets in default dashboard
+                // if user hasn`t 'Manage DMD' permission
+                if (dashboard.get('uid') === "/zport/dmd/ZenUsers/dashboards/default" &&
+                    Zenoss.Security.doesNotHavePermission('Manage DMD')) {
                     Ext.each(panel.query('portlet'), function(portlet){
                         portlet.lock()
                     });
