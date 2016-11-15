@@ -2,7 +2,7 @@
 # or saved.  Do not modify them directly here.
 # NB: PACKAGES is deprecated
 NAME = "ZenPacks.zenoss.Dashboard"
-VERSION = "1.2.4dev"
+VERSION = "1.2.5-dev"
 AUTHOR = "Zenoss"
 LICENSE = ""
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.zenoss']
