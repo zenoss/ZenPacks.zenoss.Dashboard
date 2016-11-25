@@ -340,7 +340,7 @@
             var me = this;
             Ext.applyIf(config, {
                 title: Ext.String.format(_t('Edit Dashboard {0}'), config.dashboard.get('id')),
-                height: 300,
+                height: 340,
                 width: 325,
                 layout: 'anchor',
                 defaults: {
@@ -366,7 +366,13 @@
                     minValue: 1,
                     maxValue: 10,
                     value: config.dashboard.get('columns')
-                },{
+                }, {
+                    xtype: 'checkbox',
+                    fieldLabel: _t('Audit logs?'),
+                    name: 'audit',
+                    itemId: 'audit',
+                    checked: config.dashboard.get('audit')
+                }, {
                     xtype: 'checkbox',
                     fieldLabel: _t('Lock from updates?'),
                     name: 'locked',
@@ -383,6 +389,7 @@
                             contextUid: me.down('dashboardcontext').getValue(),
                             columns: me.down('numberfield').getValue(),
                             locked: me.down('#locked').getValue(),
+                            audit: me.down('#audit').getValue(),
                             uid: me.dashboard.get('uid')
                         };
                         me.fireEvent('savedashboard', params);
