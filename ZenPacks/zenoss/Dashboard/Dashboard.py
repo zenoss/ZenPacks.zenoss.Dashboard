@@ -17,6 +17,7 @@ class Dashboard(ZenModelRM):
     columns = 3
     state = ""
     locked = False
+    audit = True
 
     _properties =  (
         {'id':'name', 'type':'string', 'mode':'w'},
@@ -24,6 +25,7 @@ class Dashboard(ZenModelRM):
         {'id':'columns', 'type':'integer', 'mode':'w'},
         {'id':'state', 'type':'string', 'mode':'w'},
         {'id':'locked', 'type':'boolean', 'mode':'w'},
+        {'id':'audit', 'type':'boolean', 'mode':'w'},
     )
 
 

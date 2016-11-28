@@ -299,6 +299,7 @@
             state = this.getCurrentDashboardState();
             Zenoss.remote.DashboardRouter.saveDashboardState({
                 uid: dashboard.get('uid'),
+                audit: dashboard.get('audit'),
                 state: state
             });
         },
