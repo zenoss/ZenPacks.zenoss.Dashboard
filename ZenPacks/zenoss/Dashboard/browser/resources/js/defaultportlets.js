@@ -368,6 +368,92 @@
 
 
     /**
+     * Portlet that loads a Multi-Graph Report
+     *
+     **/
+    Ext.define('Zenoss.Dashboard.portlets.MultiGraphReportPortlet', {
+        extend: 'Zenoss.Dashboard.view.Portlet',
+        alias: 'widget.multigraphreportportlet',
+        title: _t('Multi-Graph Report'),
+        height: 400,
+        refreshInterval: 30,
+        reportUid: '',
+        directFn: Zenoss.remote.ReportRouter.getMultiGraphReportDefs,
+        initComponent: function(){
+
+            Ext.apply(this, {
+                items: [{
+                    xtype: 'panel',
+                    ref: 'graph_reports',
+                    bodyStyle: {
+                        overflow: 'auto'
+                    }
+                }]
+            });
+            this.callParent(arguments);
+        },
+        startRefresh: function() {
+            this.refreshTask = Ext.TaskManager.start({
+                run: Ext.bind(this.refresh, this),
+                interval: this.refreshInterval * 1000,
+                fireOnStart: true
+            });
+        },
+        getConfig: function() {
+            return {
+                reportUid: this.reportUid
+            };
+        },
+        applyConfig: function(config) {
+            this.callParent([config]);
+            if (this.rendered){
+                this.onRefresh();
+            }
+        },
+        onRefresh: function() {
+            if (this.reportUid === undefined || this.reportUid == '') {
+                return;
+            }
+            this.graph_reports.removeAll();
+            var graphs = Ext.create('Zenoss.form.GraphPanel', {
+                    newWindowButton: false,
+                    directFn: this.directFn,
+                    columns: 1
+                }),
+                tb = graphs.toolbar,
+                btn = tb.query("graphrefreshbutton"),
+                tbtitle = tb.query("tbtext"),
+                seps = tb.query("tbseparator"),
+                comps = btn.concat(tbtitle).concat(seps);
+            Ext.Array.each(comps, function(comp) {
+                comp.hide();
+            });
+            graphs.setContext(this.reportUid);
+            this.graph_reports.add(graphs);
+        },
+        getCustomConfigFields: function() {
+            var fields = [{
+                xtype: 'combo',
+                name: 'reportUid',
+                queryMode: 'local',
+                store: new Zenoss.NonPaginatedStore({
+                    initialSortColumn: "name",
+                    directFn: Zenoss.remote.DashboardRouter.getMultiGraphReports,
+                    root: 'data',
+                    fields: ['uid', 'name']
+                }),
+                displayField: 'name',
+                valueField: 'uid',
+                fieldLabel: _t('Multi-Graph Report (created on Reports screen)'),
+                value: this.reportUid
+            }];
+            fields[0].store.load({});
+            return fields;
+        }
+    });
+
+
+    /**
      * Portlet that loads an Iframe.
      *
      **/

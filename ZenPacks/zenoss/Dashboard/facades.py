@@ -20,6 +20,7 @@ from Products.ZenModel.Device import Device
 from Products.ZenUtils import NetworkTree
 from Products.ZenModel.DataPointGraphPoint import DataPointGraphPoint
 from Products.ZenModel.DeviceOrganizer import DeviceOrganizer
+from Products.ZenModel.MultiGraphReport import MultiGraphReport
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_MANAGE_DMD
 from Products.ZenEvents.HeartbeatUtils import getHeartbeatObjects
@@ -62,7 +63,7 @@ class DashboardFacade(ZuulFacade):
         """
         Need to do the following
         1. Rename the dashboard if the name changed
-        2. move the dashboash if the context changed
+        2. move the dashboard if the context changed
         3. call regular set info to save properties
         """
         # will fail if the uid isn't passed in
@@ -170,6 +171,21 @@ class DashboardFacade(ZuulFacade):
         results = []
         obj = self._getObject(uid or ZPORT_DMD)
         searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        for brain in searchresults:
+            try:
+                org = brain.getObject()
+                info = IInfo(org)
+                info.fullOrganizerName = self._getFullOrganizerName(org)
+                results.append(info)
+            except:
+                # error unbraining the object just skip it
+                pass
+        return results
+
+    def getMultiGraphReports(self, uid='/zport/dmd/Reports'):
+        results = []
+        obj = self._getObject(uid)
+        searchresults = ICatalogTool(obj).search(MultiGraphReport)
         for brain in searchresults:
             try:
                 org = brain.getObject()
