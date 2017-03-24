@@ -185,6 +185,18 @@
                     }).show();
                     return;
                 }
+                if ( !dashboard.get('isUserDashboardOwner') &&
+                    Zenoss.Security.doesNotHavePermission('Manage DMD')) {
+                    new Zenoss.dialog.SimpleMessageDialog({
+                        message: _t("You don't have permission to edit this Dashboard"),
+                        title: _t('Edit Dashboard'),
+                        buttons: [{
+                            xtype: 'DialogButton',
+                            text: _t('Close')
+                        }]
+                    }).show();
+                    return;
+                }
                 var win = Ext.create('Zenoss.Dashboard.view.EditDashboardDialog', {
                     dashboard: dashboard
                 });
