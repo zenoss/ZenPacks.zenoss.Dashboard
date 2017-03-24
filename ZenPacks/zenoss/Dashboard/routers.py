@@ -12,7 +12,7 @@ from Products.Zuul.interfaces import IInfo
 from Products.Zuul.decorators import require
 from Products.ZenUtils.Ext import DirectResponse
 from Products.ZenMessaging.audit import audit
-from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_DELETE
+from Products.ZenModel.ZenossSecurity import ZEN_VIEW, ZEN_DELETE, ZEN_MANAGE_DMD
 from AccessControl import getSecurityManager
 
 
@@ -46,7 +46,11 @@ class DashboardRouter(DirectRouter):
         return DirectResponse.succeed(data=Zuul.marshal(result))
 
     def saveDashboard(self, **data):
+        user = getSecurityManager().getUser()
         facade = self._getFacade()
+        obj = facade._getObject(data['uid'])
+        if obj.owner != user.getId() and not Zuul.checkPermission(ZEN_MANAGE_DMD, facade.context):
+            raise Exception("you have no permission to edit this dashboard")
         result = facade.saveDashboard(data)
         if data.get('audit'): audit('UI.Dashboard.Edit', data_=data)
         return DirectResponse.succeed(data=Zuul.marshal(result))
