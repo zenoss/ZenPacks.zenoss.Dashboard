@@ -197,6 +197,12 @@ class DashboardFacade(ZuulFacade):
                 pass
         return results
 
+    def getMultiGraphReportGroups(self, uid=None):
+        if uid:
+            mgg = self._getObject(uid)
+            return map(IInfo, mgg.graphGroups())
+        return []
+
     def getWatchListTargets(self, uid, query=""):
         results = self.getSubOrganizers(uid)
         if query:

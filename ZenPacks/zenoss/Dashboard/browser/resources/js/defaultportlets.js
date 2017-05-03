@@ -25,6 +25,14 @@
             type: 'gear'
         }]
 
+
+    var DATE_RANGES = [
+        ["1h-ago", _t('Last Hour')],
+        ["1d-ago", _t('Last 24 Hours')],
+        ["7d-ago", _t('Last Week')],
+        ["30d-ago", _t('Last 30 days')],
+        ["1y-ago", _t('Last Year')]
+    ]
     /**
      *  Returns the first non argument to this function. So
      *  coalesce(null, undefined, 0, 1) will return 0
@@ -378,8 +386,13 @@
         height: 400,
         refreshInterval: 30,
         reportUid: '',
-        directFn: Zenoss.remote.ReportRouter.getMultiGraphReportDefs,
-        initComponent: function(){
+        graphGroup: '',
+        drange: '',
+        directFn: function(params){
+            params.graphGroup = this.graphGroup
+            return Zenoss.remote.ReportRouter.getMultiGraphReportDefs.apply(null, arguments)
+        },
+        initComponent: function () {
 
             Ext.apply(this, {
                 items: [{
@@ -401,7 +414,9 @@
         },
         getConfig: function() {
             return {
-                reportUid: this.reportUid
+                reportUid: this.reportUid,
+                graphGroup: this.graphGroup,
+                drange: this.drange
             };
         },
         applyConfig: function(config) {
@@ -417,8 +432,9 @@
             this.graph_reports.removeAll();
             var graphs = Ext.create('Zenoss.form.GraphPanel', {
                     newWindowButton: false,
-                    directFn: this.directFn,
-                    columns: 1
+                    directFn: Ext.bind(this.directFn, this),
+                    columns: 1,
+                    drange: this.drange
                 }),
                 tb = graphs.toolbar,
                 btn = tb.query("graphrefreshbutton"),
@@ -431,7 +447,11 @@
             graphs.setContext(this.reportUid);
             this.graph_reports.add(graphs);
         },
-        getCustomConfigFields: function() {
+        getCustomConfigFields: function () {
+            var groupStore = new Zenoss.NonPaginatedStore({
+                directFn: Zenoss.remote.DashboardRouter.getMultiGraphReportGroups,
+                fields: ['id']
+            })
             var fields = [{
                 xtype: 'combo',
                 name: 'reportUid',
@@ -442,11 +462,58 @@
                     root: 'data',
                     fields: ['uid', 'name']
                 }),
+                listeners: {
+                    select: function (combo) {
+                        var reportID = combo.getValue(),
+                            graphGroupCombo = Ext.getCmp('graphGroupCombo'),
+                            store = graphGroupCombo.getStore();
+                        store.load({
+                            params: {
+                                uid: reportID
+                            }
+                        });
+                        graphGroupCombo.setDisabled(false);
+                    }
+                },
                 displayField: 'name',
                 valueField: 'uid',
                 fieldLabel: _t('Multi-Graph Report (created on Reports screen)'),
                 value: this.reportUid
-            }];
+            }, {
+                id: 'graphGroupCombo',
+                xtype: 'combo',
+                name: 'graphGroup',
+                queryMode: 'local',
+                store: groupStore,
+                displayField: 'id',
+                valueField: 'id',
+                fieldLabel: _t('Graph Group'),
+                disabled: !(this.graphGroup),
+                value: this.graphGroup
+            }, {
+                id: "rangePicker",
+                xtype:'combo',
+                fieldLabel: _t('Range'),
+                name: 'drange',
+                editable: false,
+                forceSelection: true,
+                autoSelect: true,
+                value: '1h-ago',
+                queryMode: 'local',
+                valueField: 'id',
+                displayField: 'name',
+                store: new Ext.data.ArrayStore({
+                    id: 0,
+                    model: 'Zenoss.model.IdName',
+                    data: DATE_RANGES
+                }),
+                listeners: {
+                    select: function (combo) {
+                        var drange= combo.getValue()
+                    }
+                }
+            }
+            ];
             fields[0].store.load({});
             return fields;
         }
