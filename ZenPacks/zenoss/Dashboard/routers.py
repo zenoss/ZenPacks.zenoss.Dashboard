@@ -126,3 +126,8 @@ class DashboardRouter(DirectRouter):
         facade = self._getFacade()
         result = facade.getMultiGraphReports()
         return DirectResponse.succeed(data=Zuul.marshal(result, keys=['uid', 'name']))
+
+    def getMultiGraphReportGroups(self, uid=None):
+        facade = self._getFacade()
+        result = facade.getMultiGraphReportGroups(uid)
+        return DirectResponse.succeed(data=Zuul.marshal(result, keys=['id']))
