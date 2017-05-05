@@ -506,12 +506,7 @@
                     id: 0,
                     model: 'Zenoss.model.IdName',
                     data: DATE_RANGES
-                }),
-                listeners: {
-                    select: function (combo) {
-                        var drange= combo.getValue()
-                    }
-                }
+                })
             }
             ];
             fields[0].store.load({});
