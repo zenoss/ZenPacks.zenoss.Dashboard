@@ -29,6 +29,15 @@ from Products.AdvancedQuery import MatchRegexp
 ZPORT_DMD = "/zport/dmd"
 PATHS = ("/zport/dmd/Devices", "/zport/dmd/Locations", "/zport/dmd/Groups", "/zport/dmd/Systems",)
 
+try:
+    from Products.Zuul.catalog.interfaces import IModelCatalogTool
+
+    USE_MODEL_CATALOG = True
+except ImportError:
+    from Products.Zuul.interfaces import ICatalogTool
+
+    USE_MODEL_CATALOG = False
+
 
 class IDashboardFacade(IFacade):
     """
@@ -39,6 +48,23 @@ class IDashboardFacade(IFacade):
 
 class DashboardFacade(ZuulFacade):
     implements(IDashboardFacade)
+
+    def _search_catalog(self, obj, types=(), paths=(), query=None):
+        if USE_MODEL_CATALOG:
+            catalog = IModelCatalogTool(obj)
+        else:
+            catalog = ICatalogTool(obj)
+
+        return catalog.search(types=types, paths=paths, query=query)
+
+    def _search_device_catalog(self, query=None):
+        if USE_MODEL_CATALOG:
+            return IModelCatalogTool(self._dmd).devices.search(query=query)
+        else:
+            if query:
+                return self._dmd.Devices.deviceSearch.evalAdvancedQuery(query)
+            else:
+                return self._dmd.Devices.deviceSearch()
 
     def _getContext(self, uid):
         # special token meaning add it to the current user
@@ -150,20 +176,10 @@ class DashboardFacade(ZuulFacade):
         results = []
         uid = uid or ZPORT_DMD
         obj = self._getObject(uid)
-
-        try:
-            from Products.Zuul.catalog.interfaces import IModelCatalogTool
-
-            catalog = IModelCatalogTool(obj)
-        except ImportError:
-            from Products.Zuul.interfaces import ICatalogTool
-
-            catalog = ICatalogTool(obj)
-
         if uid == ZPORT_DMD:
-            searchresults = catalog.search(DeviceOrganizer, paths=PATHS)
+            searchresults = self._search_catalog(obj, types=DeviceOrganizer, paths=PATHS)
         else:
-            searchresults = catalog.search(DeviceOrganizer)
+            searchresults = self._search_catalog(obj, types=DeviceOrganizer)
 
         if isinstance(obj, DeviceOrganizer):
             info = IInfo(obj)
@@ -183,16 +199,7 @@ class DashboardFacade(ZuulFacade):
     def getTopLevelOrganizers(self, uid):
         results = []
         obj = self._getObject(uid or ZPORT_DMD)
-
-        try:
-            from Products.Zuul.catalog.interfaces import IModelCatalogTool
-
-            catalog = IModelCatalogTool(obj)
-        except ImportError:
-            from Products.Zuul.interfaces import ICatalogTool
-
-            catalog = ICatalogTool(obj)
-        searchresults = catalog.search(DeviceOrganizer)
+        searchresults = self._search_catalog(obj, types=DeviceOrganizer)
 
         for brain in searchresults:
             try:
@@ -208,17 +215,7 @@ class DashboardFacade(ZuulFacade):
     def getMultiGraphReports(self, uid='/zport/dmd/Reports'):
         results = []
         obj = self._getObject(uid)
-
-        try:
-            from Products.Zuul.catalog.interfaces import IModelCatalogTool
-
-            catalog = IModelCatalogTool(obj)
-        except ImportError:
-            from Products.Zuul.interfaces import ICatalogTool
-
-            catalog = ICatalogTool(obj)
-
-        searchresults = catalog.search(MultiGraphReport)
+        searchresults = self._search_catalog(obj, MultiGraphReport)
         for brain in searchresults:
             try:
                 org = brain.getObject()
@@ -244,15 +241,7 @@ class DashboardFacade(ZuulFacade):
         else:
             device_query = None
 
-        try:
-            from Products.Zuul.catalog.interfaces import IModelCatalogTool
-
-            queryResults = IModelCatalogTool(self._dmd).devices.search(query=device_query)
-        except ImportError:
-            if device_query:
-                queryResults = self._dmd.Devices.deviceSearch.evalAdvancedQuery(device_query)
-            else:
-                queryResults = self._dmd.Devices.deviceSearch()
+        queryResults = self._search_device_catalog(device_query)
 
         devices = (obj.getObject() for obj in queryResults)
         devices = (IInfo(dev) for dev in devices if dev.checkRemotePerm(ZEN_VIEW, dev))
