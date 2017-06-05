@@ -12,7 +12,7 @@ import itertools
 from Acquisition import aq_base
 from zope.interface import implements
 from zope.component import getMultiAdapter
-from Products.Zuul.interfaces import IFacade, IInfo, ICatalogTool, template as templateInterfaces
+from Products.Zuul.interfaces import IFacade, IInfo, template as templateInterfaces
 from Products.ZenUtils.guid.interfaces import IGUIDManager
 from Products.Zuul.facades import ZuulFacade
 from Products.Zuul import getFacade, checkPermission
@@ -29,14 +29,42 @@ from Products.AdvancedQuery import MatchRegexp
 ZPORT_DMD = "/zport/dmd"
 PATHS = ("/zport/dmd/Devices", "/zport/dmd/Locations", "/zport/dmd/Groups", "/zport/dmd/Systems",)
 
+try:
+    from Products.Zuul.catalog.interfaces import IModelCatalogTool
+
+    USE_MODEL_CATALOG = True
+except ImportError:
+    from Products.Zuul.interfaces import ICatalogTool
+
+    USE_MODEL_CATALOG = False
+
+
 class IDashboardFacade(IFacade):
     """
     A facade for the dashboards
     """
     pass
 
+
 class DashboardFacade(ZuulFacade):
     implements(IDashboardFacade)
+
+    def _search_catalog(self, obj, types=(), paths=(), query=None):
+        if USE_MODEL_CATALOG:
+            catalog = IModelCatalogTool(obj)
+        else:
+            catalog = ICatalogTool(obj)
+
+        return catalog.search(types=types, paths=paths, query=query)
+
+    def _search_device_catalog(self, query=None):
+        if USE_MODEL_CATALOG:
+            return IModelCatalogTool(self._dmd).devices.search(query=query)
+        else:
+            if query:
+                return self._dmd.Devices.deviceSearch.evalAdvancedQuery(query)
+            else:
+                return self._dmd.Devices.deviceSearch()
 
     def _getContext(self, uid):
         # special token meaning add it to the current user
@@ -149,9 +177,10 @@ class DashboardFacade(ZuulFacade):
         uid = uid or ZPORT_DMD
         obj = self._getObject(uid)
         if uid == ZPORT_DMD:
-            searchresults = ICatalogTool(obj).search(DeviceOrganizer, paths=PATHS)
+            searchresults = self._search_catalog(obj, types=DeviceOrganizer, paths=PATHS)
         else:
-            searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+            searchresults = self._search_catalog(obj, types=DeviceOrganizer)
+
         if isinstance(obj, DeviceOrganizer):
             info = IInfo(obj)
             info.fullOrganizerName = self._getFullOrganizerName(obj)
@@ -170,7 +199,8 @@ class DashboardFacade(ZuulFacade):
     def getTopLevelOrganizers(self, uid):
         results = []
         obj = self._getObject(uid or ZPORT_DMD)
-        searchresults = ICatalogTool(obj).search(DeviceOrganizer)
+        searchresults = self._search_catalog(obj, types=DeviceOrganizer)
+
         for brain in searchresults:
             try:
                 org = brain.getObject()
@@ -185,7 +215,7 @@ class DashboardFacade(ZuulFacade):
     def getMultiGraphReports(self, uid='/zport/dmd/Reports'):
         results = []
         obj = self._getObject(uid)
-        searchresults = ICatalogTool(obj).search(MultiGraphReport)
+        searchresults = self._search_catalog(obj, MultiGraphReport)
         for brain in searchresults:
             try:
                 org = brain.getObject()
@@ -207,9 +237,11 @@ class DashboardFacade(ZuulFacade):
         results = self.getSubOrganizers(uid)
         if query:
             results = [o for o in results if query.lower() in o.fullOrganizerName.lower()]
-            queryResults = self._dmd.Devices.deviceSearch.evalAdvancedQuery(MatchRegexp("titleOrId", ".*" + query + ".*"))
+            device_query = MatchRegexp("titleOrId", ".*" + query + ".*")
         else:
-            queryResults = self._dmd.Devices.deviceSearch()
+            device_query = None
+
+        queryResults = self._search_device_catalog(device_query)
 
         devices = (obj.getObject() for obj in queryResults)
         devices = (IInfo(dev) for dev in devices if dev.checkRemotePerm(ZEN_VIEW, dev))
@@ -260,7 +292,6 @@ class DashboardFacade(ZuulFacade):
                     })
         return results
 
-
     def getDeviceClassGraphDefinition(self, deviceClassName, graphPointsUids):
         deviceClass = self._dmd.Devices.getOrganizer(deviceClassName)
         # grab the first then so we don't clutter the graph.
@@ -289,7 +320,7 @@ class DashboardFacade(ZuulFacade):
         for a, b in edges:
             device = self._dmd.Devices.findDevice(b[0])
             if device.checkRemotePerm(ZEN_VIEW, device):
-                node1 =  {
+                node1 = {
                     'id': a[0],
                     'prop': a[0],
                     'icon': a[1],
