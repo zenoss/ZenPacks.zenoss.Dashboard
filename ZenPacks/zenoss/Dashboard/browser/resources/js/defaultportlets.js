@@ -919,13 +919,8 @@
                         width: 120,
                         hideable: false,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(ev, ignored, record) {
-                            var table = Zenoss.render.events(ev),
-                            url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
-                            if (table){
-                                table = table.replace('table', 'table onclick="location.href=\''+url+'\';"');
-                            }
-                            return table;
+                        renderer: function(value) {
+                            return Zenoss.render.events(value);
                         }
                     }, {
                         xtype: 'actioncolumn',
