@@ -340,7 +340,9 @@
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                this.onRefresh();
+                if(config['baselocation'].match('\/zport\/dmd\/Locations\/')) {
+                    this.onRefresh();
+                }
             }
         },
         onRefresh: function() {
