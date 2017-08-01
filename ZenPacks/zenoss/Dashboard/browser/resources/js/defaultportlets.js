@@ -340,13 +340,13 @@
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                if(config['baselocation'].startsWith('\/zport\/dmd\/Locations\/')) {
-                    this.onRefresh();
-                }
+                this.onRefresh();
             }
         },
         onRefresh: function() {
-            this.down('uxiframe').load(this.getIFrameSource());
+            if(this.baselocation.startsWith('/zport/dmd/Locations')) {
+                this.down('uxiframe').load(this.getIFrameSource());
+            }
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
