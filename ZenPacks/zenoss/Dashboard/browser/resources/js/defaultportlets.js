@@ -340,7 +340,7 @@
         applyConfig: function(config) {
             this.callParent([config]);
             if (this.rendered){
-                if(config['baselocation'].match('\/zport\/dmd\/Locations\/')) {
+                if(config['baselocation'].startsWith('\/zport\/dmd\/Locations\/')) {
                     this.onRefresh();
                 }
             }
@@ -358,6 +358,7 @@
 
             var fields = [{
                 xtype: 'combo',
+                forceSelection: true,
                 name: 'baselocation',
                 queryMode: 'local',
                 store: store,
