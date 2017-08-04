@@ -344,7 +344,9 @@
             }
         },
         onRefresh: function() {
-            this.down('uxiframe').load(this.getIFrameSource());
+            if(this.baselocation.indexOf('/zport/dmd/Locations') === 0) {
+                this.down('uxiframe').load(this.getIFrameSource());
+            }
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
@@ -356,6 +358,7 @@
 
             var fields = [{
                 xtype: 'combo',
+                forceSelection: true,
                 name: 'baselocation',
                 queryMode: 'local',
                 store: store,
