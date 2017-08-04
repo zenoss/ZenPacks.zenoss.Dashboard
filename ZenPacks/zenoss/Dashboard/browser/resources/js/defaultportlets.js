@@ -344,7 +344,7 @@
             }
         },
         onRefresh: function() {
-            if(this.baselocation.indexOf('/zport/dmd/Locations') != -1) {
+            if(this.baselocation.indexOf('/zport/dmd/Locations') === 0) {
                 this.down('uxiframe').load(this.getIFrameSource());
             }
         },
