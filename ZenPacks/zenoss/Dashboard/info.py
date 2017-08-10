@@ -6,11 +6,11 @@
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
-
 from Products.ZenModel.UserSettings import GroupSettings
 from Products.Zuul.infos import InfoBase, ProxyProperty
 from Products.Zuul.interfaces import IInfo
 from zope.interface import implements
+from AccessControl import getSecurityManager
 
 
 class IDashboardInfo(IInfo):
@@ -42,3 +42,11 @@ class DashboardInfo(InfoBase):
         if isinstance(context, GroupSettings):
             return "user_groups"
         return "current_user"
+
+    @property
+    def isUserDashboardOwner(self):
+        securityManager = getSecurityManager()
+        userId = securityManager.getUser()._login
+        if ( userId == self.owner):
+            return True
+        return False

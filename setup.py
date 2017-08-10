@@ -2,13 +2,13 @@
 # or saved.  Do not modify them directly here.
 # NB: PACKAGES is deprecated
 NAME = "ZenPacks.zenoss.Dashboard"
-VERSION = "1.2.5"
+VERSION = "1.2.6"
 AUTHOR = "Zenoss"
 LICENSE = ""
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.zenoss']
 PACKAGES = ['ZenPacks', 'ZenPacks.zenoss', 'ZenPacks.zenoss.Dashboard']
 INSTALL_REQUIRES = ['']
-COMPAT_ZENOSS_VERS = ">=4.2"
+COMPAT_ZENOSS_VERS = ">=5.2.6"
 PREV_ZENPACK_NAME = ""
 # STOP_REPLACEMENTS
 # Zenoss will not overwrite any changes you make below here.

@@ -24,7 +24,7 @@ if os.path.isdir(skinsDir):
 
 from Products.ZenModel.ZenPack import ZenPack as ZenPackBase
 
-DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"https://www2.zenoss.com/in-app-welcome?v=4.9.70&p=core"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"/zport/dmd/Locations","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
+DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"https://www2.zenoss.com/in-app-welcome?v=4.9.70&p=%s"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"/zport/dmd/Locations","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
 
 class ZenPack(ZenPackBase):
     """
@@ -53,10 +53,11 @@ class ZenPack(ZenPackBase):
         default = dmd.ZenUsers.dashboards._getOb('default', None)
         if not default:
             log.info("Creating the default Dashboard")
+            site = {'core': 'core', 'enterprise': 'commercial'}[dmd.getProductName()]
             dashboard = Dashboard('default')
             dashboard.columns = 2
             dashboard.owner = 'admin'
-            dashboard.state = DEFAULT_DASHBOARD_STATE
+            dashboard.state = DEFAULT_DASHBOARD_STATE  % site
             dmd.ZenUsers.dashboards._setObject('default', dashboard)
 
     def remove(self, dmd, leaveObjects=False):
