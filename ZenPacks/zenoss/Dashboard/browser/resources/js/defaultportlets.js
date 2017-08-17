@@ -283,6 +283,35 @@
                 width: 200
             }];
             return fields;
+        },
+        onRefresh: function() {
+            var me = this,
+                ctrl = window.globalApp.getController("DashboardController"),
+                idAsArray = ctrl.getCurrentDashboard().id.split("/"),
+                id = idAsArray[idAsArray.length -1],
+                portletId = me.ownerCt.id;
+            ctrl.getDashboardSelecter().getStore().load({
+                callback: function() {
+                    var combo = this.getDashboardSelecter(),
+                        record = combo.getStore().findRecord('id', id);
+                    if (record) {
+                        var obj = Ext.JSON.decode(record.get("state"));
+                        for (var i in obj) {
+                            if (obj[i].id === portletId) {
+                                me.config = obj[i].items[0].config;
+                                me.applyConfig(me.config);
+                                me.title = obj[i].items[0].title;
+                                me.refreshInterval = obj[i].items[0].refreshInterval;
+                                me.height = obj[i].items[0].height;
+                            }
+                        }
+                    }
+                },
+                scope: ctrl
+            });
+            return {
+                html: this.content
+            };
         }
     });
 
