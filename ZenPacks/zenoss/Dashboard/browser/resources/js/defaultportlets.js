@@ -776,6 +776,7 @@
         initComponent: function(){
             Zenoss.env.initProductionStates();
             var store = Ext.create('Zenoss.DeviceStore', {});
+            this.getAllProductionState();
             store.setBaseParam('uid', '/zport/dmd/Devices');
             store.setBaseParam('keys', ['uid', 'name', 'productionState']);
             store.setParamsParam('productionState', this.productionStates);
@@ -813,6 +814,20 @@
             return {
                 productionStates: this.productionStates
             };
+        },
+        getAllProductionState: function() {
+            Zenoss.remote.DeviceRouter.getProductionStates({},
+                function(result) {
+                    if (result.success) {
+                        Zenoss.env.PRODUCTION_STATES = [];
+                        Zenoss.env.PRODUCTION_STATES_MAP = {};
+                        Ext.each(result.data, function(item) {
+                            Zenoss.env.PRODUCTION_STATES.push(item);
+                            Zenoss.env.PRODUCTION_STATES_MAP[item.value] = item.name;
+                        });
+                    };
+                }
+            );
         },
         applyConfig: function(config) {
             if (this.rendered) {
