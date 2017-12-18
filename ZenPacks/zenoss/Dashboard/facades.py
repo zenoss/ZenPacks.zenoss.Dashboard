@@ -269,6 +269,9 @@ class DashboardFacade(ZuulFacade):
         return devdata
 
     def getDaemonProcessesDown(self):
+        user = self.context.dmd.ZenUsers.getUserSettings()      
+        if user.hasNoGlobalRoles():
+            return
         return getHeartbeatObjects(deviceRoot=self._dmd.Devices,
                                    keys=['host', 'process', 'secondsDown', 'monitor'])
 
