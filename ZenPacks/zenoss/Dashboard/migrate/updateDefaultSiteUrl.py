@@ -17,7 +17,7 @@ from Products.ZenModel.migrate.Migrate import Version
 from Products.ZenModel.ZenPack import ZenPackMigration
 
 
-DOC_URL = "https://www2.zenoss.com/in-app-welcome" +
+DOC_URL = "https://www2.zenoss.com/in-app-welcome" + \
     "?v=4.9.70&p=%s" % {'core': 'core', 'enterprise': 'commercial'}[pack.dmd.getProductName()]
 
 
