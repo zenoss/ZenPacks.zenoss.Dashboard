@@ -17,16 +17,14 @@ from Products.ZenModel.migrate.Migrate import Version
 from Products.ZenModel.ZenPack import ZenPackMigration
 
 
-DOC_URL = "https://www2.zenoss.com/in-app-welcome" + \
-    "?v=4.9.70&p=%s" % {'core': 'core', 'enterprise': 'commercial'}[pack.dmd.getProductName()]
-
-
 class updateDefaultSiteUrl(ZenPackMigration):
     version = Version(1, 2, 6)
 
     def migrate(self, pack):
         if hasattr(pack.dmd.ZenUsers, 'dashboards'):
             changed = False
+            doc_url = "https://www2.zenoss.com/in-app-welcome" + \
+                    "?v=4.9.70&p=%s" % {'core': 'core', 'enterprise': 'commercial'}[pack.dmd.getProductName()]
             default = pack.dmd.ZenUsers.dashboards._getOb('default', None)
             if default:
                 default_dashboard_json = json.loads(default.state)
@@ -34,8 +32,8 @@ class updateDefaultSiteUrl(ZenPackMigration):
                     items = portlet['items']
                     for item in items:
                         if 'Welcome to Zenoss!' in item.get('title'):
-                            if DOC_URL not in item['config']['siteUrl']:
-                                item['config']['siteUrl'] = DOC_URL
+                            if doc_url not in item['config']['siteUrl']:
+                                item['config']['siteUrl'] = doc_url
                                 changed = True
 
             if changed:
