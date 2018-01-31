@@ -13,7 +13,7 @@
 
     Ext.application({
         name: 'Zenoss.Dashboard',
-        appFolder: "/++resource++dashboard/js/",
+        appFolder: "++resource++dashboard/js/",
         controllers: ['DashboardController'],
         currentStep: 0,
         launch: function() {
