@@ -292,10 +292,11 @@
         saveDashboardState: function() {
             var dashboard = this.getCurrentDashboard(),
                 state = this.getCurrentDashboardState(),
-                panel = this.getDashboardPanel();
+                panel = this.getDashboardPanel(),
+                portlets = panel.query('portlet');
 
             // if the dashboard is locked then do not update the server with a new state
-            if (dashboard.get('locked') || panel.query('portlet')[0].resizable === false) {
+            if (dashboard.get('locked') || portlets.length > 0 && portlets[0].resizable === false) {
                 return;
             }
 
