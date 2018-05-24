@@ -940,7 +940,7 @@
         alias: 'widget.watchlistportlet',
         title: _t('Watch List'),
         height: 300,
-        uids: ['/zport/dmd/Devices/Discovered'],
+        uids: [],
         initComponent: function(){
             var me = this,
                 store = Ext.create('Zenoss.Dashboard.stores.WatchListStore', {});
