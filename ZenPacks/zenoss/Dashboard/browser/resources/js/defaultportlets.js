@@ -358,7 +358,7 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', this.baselocation, this.pollingrate);
+            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', Zenoss.render.link(null, this.baselocation), this.pollingrate);
         },
         getConfig: function() {
             return {
