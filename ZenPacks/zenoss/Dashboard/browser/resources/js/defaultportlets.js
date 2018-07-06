@@ -1026,7 +1026,6 @@
                     }]
                 });
             store.setBaseParam("keys", ['uid', 'name', 'fullOrganizerName']);
-            store.setBaseParam("uid", "/zport/dmd");
             store.load({});
             var fields = [{
                 xtype: 'combo',
