@@ -233,7 +233,7 @@ class DashboardFacade(ZuulFacade):
             return map(IInfo, mgg.graphGroups())
         return []
 
-    def getWatchListTargets(self, uid, query=""):
+    def getWatchListTargets(self, uid="/zport/dmd", query=""):
         results = self.getSubOrganizers(uid)
         if query:
             results = [o for o in results if query.lower() in o.fullOrganizerName.lower()]
