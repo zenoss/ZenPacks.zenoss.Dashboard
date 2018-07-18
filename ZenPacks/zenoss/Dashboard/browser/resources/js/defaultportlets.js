@@ -348,6 +348,7 @@
         initComponent: function(){
 
             Ext.apply(this, {
+                initlocation: this.baselocation,
                 items: [{
                     xtype: 'uxiframe',
                     ref: 'mapIframe',
@@ -362,7 +363,7 @@
         },
         getConfig: function() {
             return {
-                baselocation: this.baselocation,
+                baselocation: this.baselocation || this.initlocation,
                 pollingrate: this.pollingrate
             };
         },
@@ -394,7 +395,8 @@
                 displayField: 'name',
                 valueField: 'uid',
                 fieldLabel: _t('Base Location'),
-                value: this.baselocation
+                value: this.baselocation,
+                allowBlank: false
             }, {
                 xtype: 'numberfield',
                 name: 'pollingrate',
