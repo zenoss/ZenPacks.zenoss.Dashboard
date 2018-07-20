@@ -361,7 +361,7 @@
         getIFrameSource: function() {
             var location = Zenoss.render.link(null, this.baselocation);
             if (location.indexOf('/zport/dmd/Locations') < 0) {
-                location = this.initlocation;
+                return null;
             }
             return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', location, this.pollingrate);
         },
@@ -378,7 +378,11 @@
             }
         },
         onRefresh: function() {
-            this.down('uxiframe').load(this.getIFrameSource());
+            var iframeCmp = this.down('uxiframe'),
+                newSrc = this.getIFrameSource();
+            if (newSrc) {
+                iframeCmp.load(newSrc);
+            }
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
