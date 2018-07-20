@@ -359,7 +359,11 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', Zenoss.render.link(null, this.baselocation), this.pollingrate);
+            var location = Zenoss.render.link(null, this.baselocation);
+            if (location.indexOf('/zport/dmd/Locations') < 0) {
+                location = this.initlocation;
+            }
+            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', location, this.pollingrate);
         },
         getConfig: function() {
             return {
@@ -374,9 +378,7 @@
             }
         },
         onRefresh: function() {
-            if(this.baselocation.indexOf('/zport/dmd/Locations') === 0) {
-                this.down('uxiframe').load(this.getIFrameSource());
-            }
+            this.down('uxiframe').load(this.getIFrameSource());
         },
         getCustomConfigFields: function() {
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
@@ -394,6 +396,12 @@
                 store: store,
                 displayField: 'name',
                 valueField: 'uid',
+                locationRegExp: new RegExp('/zport/dmd/Locations'),
+                validator: function() {
+                    var value = this.getValue(),
+                        valid = this.locationRegExp.test(value);
+                    return valid ? true : this.invalidText;
+                },
                 fieldLabel: _t('Base Location'),
                 value: this.baselocation,
                 allowBlank: false
