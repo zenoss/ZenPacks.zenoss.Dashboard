@@ -348,6 +348,7 @@
         initComponent: function(){
 
             Ext.apply(this, {
+                initlocation: this.baselocation,
                 items: [{
                     xtype: 'uxiframe',
                     ref: 'mapIframe',
@@ -358,11 +359,11 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', this.baselocation, this.pollingrate);
+            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', Zenoss.render.link(null, this.baselocation), this.pollingrate);
         },
         getConfig: function() {
             return {
-                baselocation: this.baselocation,
+                baselocation: this.baselocation || this.initlocation,
                 pollingrate: this.pollingrate
             };
         },
@@ -394,7 +395,8 @@
                 displayField: 'name',
                 valueField: 'uid',
                 fieldLabel: _t('Base Location'),
-                value: this.baselocation
+                value: this.baselocation,
+                allowBlank: false
             }, {
                 xtype: 'numberfield',
                 name: 'pollingrate',
@@ -940,7 +942,7 @@
         alias: 'widget.watchlistportlet',
         title: _t('Watch List'),
         height: 300,
-        uids: ['/zport/dmd/Devices/Discovered'],
+        uids: [],
         initComponent: function(){
             var me = this,
                 store = Ext.create('Zenoss.Dashboard.stores.WatchListStore', {});
@@ -1026,7 +1028,6 @@
                     }]
                 });
             store.setBaseParam("keys", ['uid', 'name', 'fullOrganizerName']);
-            store.setBaseParam("uid", "/zport/dmd");
             store.load({});
             var fields = [{
                 xtype: 'combo',
