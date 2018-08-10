@@ -79,7 +79,7 @@
         var table = Zenoss.render.events(value),
             uid = record.data.uid,
             url;
-        // strip device name from device class
+
         if (uid.indexOf('/devices/') < 0) {
             url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'));
         } else {
