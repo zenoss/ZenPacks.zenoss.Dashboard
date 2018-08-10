@@ -80,15 +80,15 @@
             uid = record.data.uid,
             url;
 
+        // no table return empty string in case of null/undefined/false (to not show that in view);
+        if (!table) return '';
+
         if (uid.indexOf('/devices/') < 0) {
             url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'));
         } else {
             url = Zenoss.render.link(false, uid + '/devicedetail?filter=default#deviceDetailNav:device_events');
         }
-        if (table){
-            table = table.replace('<table', '<table onclick="location.href=\''+url+'\';" ');
-        }
-        return table;
+        return table.replace('<table', '<table onclick="location.href=\''+url+'\';" ');
     };
 
     /**
