@@ -74,6 +74,22 @@
             }
         });
     };
+    Zenoss.Dashboard.eventRenderer = function(value, metaData, record) {
+        console.log(record);
+        var table = Zenoss.render.events(value),
+            uid = record.data.uid,
+            url;
+        // strip device name from device class
+        if (uid.indexOf('/devices/') < 0) {
+            url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'));
+        } else {
+            url = Zenoss.render.link(false, uid + '/devicedetail?filter=default#deviceDetailNav:device_events');
+        }
+        if (table){
+            table = table.replace('<table', '<table onclick="location.href=\''+url+'\';" ');
+        }
+        return table;
+    };
 
     /**
      * @class Zenoss.Dashboard.view.Portlet
@@ -690,14 +706,7 @@
                         header: _t('Events'),
                         sortable: true,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(ev, ignored, record) {
-                            var table = Zenoss.render.events(ev),
-                            url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
-                            if (table){
-                                table = table.replace('table', 'table onclick="location.href=\''+url+'\';"');
-                            }
-                            return table;
-                        }
+                        renderer: Zenoss.Dashboard.eventRenderer
                     }]
                 }]
             });
@@ -968,9 +977,7 @@
                         width: 120,
                         hideable: false,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(value) {
-                            return Zenoss.render.events(value);
-                        }
+                        renderer: Zenoss.Dashboard.eventRenderer
                     }, {
                         xtype: 'actioncolumn',
                         width: 60,
@@ -1847,9 +1854,7 @@
                         header: _t('Events'),
                         width: 120,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(value) {
-                            return Zenoss.render.events(value);
-                        }
+                        renderer: Zenoss.Dashboard.eventRenderer
                     }]
                 }]
             });
