@@ -113,9 +113,15 @@
                         store.load({
                             params: {
                                 deviceClass: combo.getValue()
+                            },
+                            callback: function (records) {
+                                if (records.length) {
+                                    graphPointCombo.setDisabled(false);
+                                } else {
+                                    graphPointCombo.setDisabled(true);
+                                }
                             }
                         });
-                        graphPointCombo.setDisabled(false);
                     }
                 },
                 listConfig: {
