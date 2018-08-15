@@ -126,16 +126,12 @@
                 value: this.deviceClass
             }, {
                 id: 'portletGraphPoints',
-                xtype: 'combo',
+                xtype: 'multiselect',
+                maxHeight: 200,
                 name: 'graphPoints',
-                multiSelect: true,
                 fieldLabel: _t('Select multiple Graph Points'),
                 disabled: !(this.graphPoints.length),
                 value: this.graphPoints,
-                queryMode: 'local',
-                listConfig: {
-                    resizeable: true
-                },
                 displayField: 'name',
                 valueField: 'uid',
                 store: new Zenoss.NonPaginatedStore({
