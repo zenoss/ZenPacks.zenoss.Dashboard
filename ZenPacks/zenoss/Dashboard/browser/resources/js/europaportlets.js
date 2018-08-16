@@ -150,7 +150,6 @@
                 maxHeight: 200,
                 name: 'graphPoints',
                 fieldLabel: _t('Select multiple Graph Points'),
-                disabled: !(this.graphPoints.length),
                 value: this.graphPoints,
                 displayField: 'name',
                 valueField: 'uid',
