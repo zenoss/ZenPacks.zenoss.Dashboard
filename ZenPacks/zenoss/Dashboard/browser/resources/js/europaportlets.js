@@ -146,6 +146,7 @@
             }, {
                 id: 'portletGraphPoints',
                 xtype: 'multiselect',
+                minHeight: 50,
                 maxHeight: 200,
                 name: 'graphPoints',
                 fieldLabel: _t('Select multiple Graph Points'),
