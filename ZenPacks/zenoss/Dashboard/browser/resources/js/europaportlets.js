@@ -66,9 +66,21 @@
             container.add(graph);
         },
         getConfig: function() {
+            var deviceClass = this.deviceClass;
+            var graphPoints = this.graphPoints;
+            var deviceClassCmp = Ext.getCmp('portletDeviceClass');
+            var graphPointsCmp = Ext.getCmp('portletGraphPoints');
+
+            if (deviceClassCmp) {
+                deviceClass = deviceClassCmp.getValue();
+            }
+            if (graphPointsCmp) {
+                graphPoints = graphPointsCmp.getValue();
+            }
+
             return {
-                deviceClass: this.deviceClass,
-                graphPoints: this.graphPoints
+                deviceClass: deviceClass,
+                graphPoints: graphPoints
             };
         },
         applyConfig: function(config) {
@@ -97,6 +109,7 @@
         },
         getCustomConfigFields: function() {
             var fields = [{
+                id: 'portletDeviceClass',
                 xtype: 'combo',
                 name: 'deviceClass',
                 fieldLabel: _t('Select a device class'),
