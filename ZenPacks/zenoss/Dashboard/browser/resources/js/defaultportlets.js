@@ -379,10 +379,17 @@
             }
         },
         getCustomConfigFields: function() {
+            var me = this;
+
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
             store.load({
                 params: {
                     uid: "/zport/dmd/Locations"
+                },
+                callback: function(records, operation, success) {
+                    if (success && records.length) {
+                        me.up('form').isValid();
+                    }
                 }
             });
 
