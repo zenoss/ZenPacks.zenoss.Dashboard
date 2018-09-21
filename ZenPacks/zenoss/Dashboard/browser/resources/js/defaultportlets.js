@@ -709,11 +709,11 @@
                         header: _t('Events'),
                         sortable: true,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(ev, ignored, record) {
-                            var table = Zenoss.render.events(ev),
-                            url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
+                        renderer: function(value, metaData, record) {
+                            var table = Zenoss.render.events(value),
+                            url = Zenoss.render.link(false, record.data.uid) + '/devicedetail?filter=default#deviceDetailNav:device_events';
                             if (table){
-                                table = table.replace('table', 'table onclick="location.href=\''+url+'\';"');
+                                table = table.replace('<table', '<table onclick="location.href=\''+url+'\';" ');
                             }
                             return table;
                         }
