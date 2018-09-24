@@ -375,7 +375,11 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', Zenoss.render.link(null, this.baselocation), this.pollingrate);
+            var location = Zenoss.render.link(null, this.baselocation);
+            if (location.indexOf('/zport/dmd/Locations') < 0) {
+                return null;
+            }
+            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', location, this.pollingrate);
         },
         getConfig: function() {
             return {
@@ -390,15 +394,24 @@
             }
         },
         onRefresh: function() {
-            if(this.baselocation.indexOf('/zport/dmd/Locations') === 0) {
-                this.down('uxiframe').load(this.getIFrameSource());
+            var iframeCmp = this.down('uxiframe'),
+                newSrc = this.getIFrameSource();
+            if (newSrc) {
+                iframeCmp.load(newSrc);
             }
         },
         getCustomConfigFields: function() {
+            var me = this;
+
             var store = Ext.create('Zenoss.Dashboard.stores.Organizer', {});
             store.load({
                 params: {
                     uid: "/zport/dmd/Locations"
+                },
+                callback: function(records, operation, success) {
+                    if (success && records.length) {
+                        me.up('form').isValid();
+                    }
                 }
             });
 
@@ -410,6 +423,12 @@
                 store: store,
                 displayField: 'name',
                 valueField: 'uid',
+                locationRegExp: new RegExp('/zport/dmd/Locations'),
+                validator: function() {
+                    var value = this.getValue(),
+                        valid = this.locationRegExp.test(value);
+                    return valid ? true : this.invalidText;
+                },
                 fieldLabel: _t('Base Location'),
                 value: this.baselocation,
                 allowBlank: false

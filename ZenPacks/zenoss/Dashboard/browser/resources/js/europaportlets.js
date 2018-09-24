@@ -66,9 +66,21 @@
             container.add(graph);
         },
         getConfig: function() {
+            var deviceClass = this.deviceClass;
+            var graphPoints = this.graphPoints;
+            var deviceClassCmp = Ext.getCmp('portletDeviceClass');
+            var graphPointsCmp = Ext.getCmp('portletGraphPoints');
+
+            if (deviceClassCmp) {
+                deviceClass = deviceClassCmp.getValue();
+            }
+            if (graphPointsCmp) {
+                graphPoints = graphPointsCmp.getValue();
+            }
+
             return {
-                deviceClass: this.deviceClass,
-                graphPoints: this.graphPoints
+                deviceClass: deviceClass,
+                graphPoints: graphPoints
             };
         },
         applyConfig: function(config) {
@@ -97,6 +109,7 @@
         },
         getCustomConfigFields: function() {
             var fields = [{
+                id: 'portletDeviceClass',
                 xtype: 'combo',
                 name: 'deviceClass',
                 fieldLabel: _t('Select a device class'),
@@ -113,9 +126,15 @@
                         store.load({
                             params: {
                                 deviceClass: combo.getValue()
+                            },
+                            callback: function (records) {
+                                if (records.length) {
+                                    graphPointCombo.setDisabled(false);
+                                } else {
+                                    graphPointCombo.setDisabled(true);
+                                }
                             }
                         });
-                        graphPointCombo.setDisabled(false);
                     }
                 },
                 listConfig: {
@@ -126,16 +145,12 @@
                 value: this.deviceClass
             }, {
                 id: 'portletGraphPoints',
-                xtype: 'combo',
+                xtype: 'multiselect',
+                minHeight: 50,
+                maxHeight: 200,
                 name: 'graphPoints',
-                multiSelect: true,
                 fieldLabel: _t('Select multiple Graph Points'),
-                disabled: !(this.graphPoints.length),
                 value: this.graphPoints,
-                queryMode: 'local',
-                listConfig: {
-                    resizeable: true
-                },
                 displayField: 'name',
                 valueField: 'uid',
                 store: new Zenoss.NonPaginatedStore({
