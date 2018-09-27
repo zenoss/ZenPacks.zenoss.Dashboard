@@ -7,6 +7,20 @@
  *
  ****************************************************************************/
 (function(){
+    // Fix for ZEN-30636
+    if (Zenoss.env.CSE_VIRTUAL_ROOT) {
+        var statePropertyKey = 'selected_dashboard';
+        var selectedDashboard = Ext.state.Manager.get(statePropertyKey);
+        var isSelectedDashboard = selectedDashboard && selectedDashboard['value'];
+
+        if (isSelectedDashboard) {
+            Ext.state.Manager.set(
+                statePropertyKey,
+                {value: selectedDashboard.value.replace(Zenoss.env.CSE_VIRTUAL_ROOT, '/')}
+            );
+        }
+    }
+
     Ext.Loader.setConfig({
         enabled: true
     });

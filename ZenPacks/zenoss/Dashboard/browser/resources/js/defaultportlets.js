@@ -74,6 +74,22 @@
             }
         });
     };
+    Zenoss.Dashboard.eventRenderer = function(value, metaData, record) {
+        console.log(record);
+        var table = Zenoss.render.events(value),
+            uid = record.data.uid,
+            url;
+
+        // no table return empty string in case of null/undefined/false (to not show that in view);
+        if (!table) return '';
+
+        if (uid.indexOf('/devices/') < 0) {
+            url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'));
+        } else {
+            url = Zenoss.render.link(false, uid + '/devicedetail?filter=default#deviceDetailNav:device_events');
+        }
+        return table.replace('<table', '<table onclick="location.href=\''+url+'\';" ');
+    };
 
     /**
      * @class Zenoss.Dashboard.view.Portlet
@@ -359,7 +375,11 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', Zenoss.render.link(null, this.baselocation), this.pollingrate);
+            var location = Zenoss.render.link(null, this.baselocation);
+            if (location.indexOf('/zport/dmd/Locations') < 0) {
+                return null;
+            }
+            return Ext.String.format('{0}/simpleLocationGeoMap?polling={1}', location, this.pollingrate);
         },
         getConfig: function() {
             return {
@@ -374,8 +394,10 @@
             }
         },
         onRefresh: function() {
-            if(this.baselocation.indexOf('/zport/dmd/Locations') === 0) {
-                this.down('uxiframe').load(this.getIFrameSource());
+            var iframeCmp = this.down('uxiframe'),
+                newSrc = this.getIFrameSource();
+            if (newSrc) {
+                iframeCmp.load(newSrc);
             }
         },
         getCustomConfigFields: function() {
@@ -401,6 +423,12 @@
                 store: store,
                 displayField: 'name',
                 valueField: 'uid',
+                locationRegExp: new RegExp('/zport/dmd/Locations'),
+                validator: function() {
+                    var value = this.getValue(),
+                        valid = this.locationRegExp.test(value);
+                    return valid ? true : this.invalidText;
+                },
                 fieldLabel: _t('Base Location'),
                 value: this.baselocation,
                 allowBlank: false
@@ -697,14 +725,7 @@
                         header: _t('Events'),
                         sortable: true,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(ev, ignored, record) {
-                            var table = Zenoss.render.events(ev),
-                            url = record.data.uid + '/devicedetail?filter=default#deviceDetailNav:device_events';
-                            if (table){
-                                table = table.replace('table', 'table onclick="location.href=\''+url+'\';"');
-                            }
-                            return table;
-                        }
+                        renderer: Zenoss.Dashboard.eventRenderer
                     }]
                 }]
             });
@@ -975,9 +996,7 @@
                         width: 120,
                         hideable: false,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(value) {
-                            return Zenoss.render.events(value);
-                        }
+                        renderer: Zenoss.Dashboard.eventRenderer
                     }, {
                         xtype: 'actioncolumn',
                         width: 60,
@@ -1854,9 +1873,7 @@
                         header: _t('Events'),
                         width: 120,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: function(value) {
-                            return Zenoss.render.events(value);
-                        }
+                        renderer: Zenoss.Dashboard.eventRenderer
                     }]
                 }]
             });
