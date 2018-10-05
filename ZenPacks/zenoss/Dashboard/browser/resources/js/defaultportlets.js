@@ -75,7 +75,6 @@
         });
     };
     Zenoss.Dashboard.eventRenderer = function(value, metaData, record) {
-        console.log(record);
         var table = Zenoss.render.events(value),
             uid = record.data.uid,
             url;
@@ -105,10 +104,13 @@
         anchor: '100%',
         frame: true,
         resizable:true,
+        resizeHandles: 's',
         closable: true,
         collapsible: true,
         animCollapse: true,
         height: 200,
+        minHeight: 200,
+        minWidth: 200,
         draggable: {
             moveOnDrag: false
         },
@@ -242,18 +244,24 @@
             Ext.apply(this, config);
             this.fireEvent('applyconfig', this);
         },
-	lock: function() {
-	    this.resizable = false
-	    this.collapsible = false
-	    this.closable = false
-	    Ext.apply(this, {tools: Zenoss.Dashboard.PortletLockedTools})
-	},
-	unlock: function() {
-	    this.resizable = true
-	    this.collapsible = true
-	    this.closable = true
-	    Ext.apply(this, {tools: Zenoss.Dashboard.PortletUnlockedTools})
-	}
+        lock: function() {
+            this.resizable = false
+            this.collapsible = false
+            this.closable = false
+            Ext.apply(this, {tools: Zenoss.Dashboard.PortletLockedTools})
+        },
+        unlock: function() {
+            this.resizable = true
+            this.collapsible = true
+            this.closable = true
+            Ext.apply(this, {tools: Zenoss.Dashboard.PortletUnlockedTools})
+        },
+        /** @private */
+        setBox: function (box) {
+            // The resizer calls setBox which would set our left/top coordinates but
+            // that is a BAD thing in a column layout which relies on flow!
+            this.setSize(box.width, box.height);
+        }
     });
 
 
@@ -1665,7 +1673,6 @@
                         self.nodes.push(n);
                     }
                 });
-                console.log(self.nodes);
                 node = node.data(self.force.nodes(), function(d) { return d.id; });
                 var nodeContainer = node.enter()
                     .append("g")

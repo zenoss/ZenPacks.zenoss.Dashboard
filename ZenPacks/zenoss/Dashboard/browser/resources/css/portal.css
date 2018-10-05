@@ -22,11 +22,17 @@
     background: #DFE8F6;
 }
 .x-portal-body {
-    padding: 0 0 0 8px;
+    
 }
-.x-portal .x-portal-column {
+.x-portal-column-first {
+    clear: left;
+}
+.x-portal-column-last {
+    clear: right;
+}
+.x-portal-column {
     /* columns must have vertical padding to avoid losing dimensions when empty */
-    padding: 8px 8px 0 0;
+    padding: 0 0 8px 0;
 }
 .x-portal .x-panel-dd-spacer {
     border: 2px dashed #99bbe8;

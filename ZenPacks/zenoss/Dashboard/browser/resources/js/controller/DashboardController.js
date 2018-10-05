@@ -351,7 +351,7 @@
                     items.push(this.extractPortlet(portlet));
                 }
                 state.push({
-                    id: 'col-' + i.toString(),
+                    columnWidth: column.columnWidth,
                     items: items
                 });
                 items = [];
@@ -366,19 +366,21 @@
             var dashboard = this.getCurrentDashboard();
             if (dashboard) {
                 var panel = this.getDashboardPanel(), i,
-                    state = dashboard.get('state'), columns=[];
+                    state = dashboard.get('state'), columns=[],
+                    columnsCount = dashboard.get('columns');
+                panel.setMaxColumns(columnsCount);
                 if (state) {
                     columns = Ext.JSON.decode(state);
-                    if (columns.length !== dashboard.get('columns')) {
+                    /*if (columns.length !== dashboard.get('columns')) {
                         columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
                         this.saveDashboardState();
-                    }
+                    }*/
                 } else {
                     // if there is no state (it is a new dashboard or an empty one)
                     // just add placeholders for the columns
-                    for (i=0; i<dashboard.get('columns'); i++) {
+                    for (i=0; i<columnsCount; i++) {
                         columns.push({
-                            id: 'col-' + i.toString(),
+                            columnWidth: 1/columnsCount,
                             items: []
                         });
                     }
@@ -402,6 +404,7 @@
                     });
                 }
                 Ext.resumeLayouts(true);
+                panel.updateLayout();
             }
         },
         /**
@@ -435,7 +438,7 @@
             });
             for (i=0; i<columnLength; i++) {
                 newColumns.push({
-                    id: 'col-' + i.toString(),
+                    columnWidth: 1/columnLength,
                     items: []
                 });
             }
