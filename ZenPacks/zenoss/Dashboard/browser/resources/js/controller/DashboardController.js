@@ -431,14 +431,14 @@
          * This happens when the saved state of the portlet config
          * differs from the saved number of columns for a dashboard
          **/
-        movePortletsToColumns: function(columns, columnLength) {
+        movePortletsToColumns: function(columns, columnsCount) {
             var portlets = [], i, newColumns=[];
             Ext.each(columns, function(col){
                 portlets = portlets.concat(col.items);
             });
-            for (i=0; i<columnLength; i++) {
+            for (i=0; i<columnsCount; i++) {
                 newColumns.push({
-                    columnWidth: 1/columnLength,
+                    columnWidth: 1/columnsCount,
                     items: []
                 });
             }
@@ -446,7 +446,7 @@
             Ext.each(portlets, function(portlet){
                 newColumns[i].items.push(portlet);
                 i++;
-                if (i === columnLength) {
+                if (i === columnsCount) {
                     i=0;
                 }
             });
