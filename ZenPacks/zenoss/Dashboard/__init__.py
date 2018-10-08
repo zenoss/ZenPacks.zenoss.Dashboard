@@ -5,7 +5,6 @@ from zope.component import getUtility
 from Products.CMFCore.DirectoryView import registerDirectory
 from Products.ZenRelations.RelSchema import ToOne, ToManyCont
 from Products.ZenModel.UserSettings import UserSettings, UserSettingsManager
-from Products.ZenUtils.virtual_root import IVirtualRoot
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 log = logging.getLogger('zen.dashboard')
 
@@ -23,6 +22,13 @@ UserSettingsManager._relations += SETTINGS_MANAGER_RELATIONSHIP
 skinsDir = os.path.join(os.path.dirname(__file__), 'skins')
 if os.path.isdir(skinsDir):
     registerDirectory(skinsDir, globals())
+
+try:
+    #backward compatibility for older RM versions
+    from Products.ZenUtils.virtual_root import IVirtualRoot
+    add_virtual_root = getUtility(IVirtualRoot).ensure_virtual_root
+except Exception:
+    add_virtual_root = lambda path: path
 
 from Products.ZenModel.ZenPack import ZenPack as ZenPackBase
 
@@ -56,7 +62,7 @@ class ZenPack(ZenPackBase):
         if not default:
             log.info("Creating the default Dashboard")
             site = {'core': 'core', 'enterprise': 'commercial'}[dmd.getProductName()]
-            baselocation = getUtility(IVirtualRoot).ensure_virtual_root("/zport/dmd/Locations")
+            baselocation = add_virtual_root("/zport/dmd/Locations")
             dashboard = Dashboard('default')
             dashboard.columns = 2
             dashboard.owner = 'admin'

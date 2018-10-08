@@ -16,19 +16,23 @@ import json
 from zope.component import getUtility
 from Products.ZenModel.migrate.Migrate import Version
 from Products.ZenModel.ZenPack import ZenPackMigration
-from Products.ZenUtils.virtual_root import IVirtualRoot
-
+try:
+    #backward compatibility for older RM versions
+    from Products.ZenUtils.virtual_root import IVirtualRoot
+    add_virtual_root = getUtility(IVirtualRoot).ensure_virtual_root
+except Exception:
+    add_virtual_root = lambda path: path
 
 class updateDefaultGMapLocation(ZenPackMigration):
     """ Add cse prefix to base location of Google Map portlet"""
 
-    version = Version(1, 3, 0)
+    version = Version(1, 3, 3)
 
     def migrate(self, pack):
         if hasattr(pack.dmd.ZenUsers, 'dashboards'):
             changed = False
             baselocation_old = '/zport/dmd/Locations'
-            baselocation_new = getUtility(IVirtualRoot).ensure_virtual_root(baselocation_old)
+            baselocation_new = add_virtual_root(baselocation_old)
             default = pack.dmd.ZenUsers.dashboards._getOb('default', None)
             if default:
                 default_dashboard_json = json.loads(default.state)
