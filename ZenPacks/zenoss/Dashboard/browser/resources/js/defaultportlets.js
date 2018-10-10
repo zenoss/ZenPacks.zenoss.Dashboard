@@ -283,6 +283,8 @@
         },
         applyConfig: function(config) {
             if (config.html && config.html !== this.content) {
+                config.html = this.convertToValidHTMLString(config.html);
+
                 this.content = config.html;
                 this.update(config.html, true);
             }
@@ -328,6 +330,12 @@
             return {
                 html: this.content
             };
+        },
+        convertToValidHTMLString: function (HTMLString) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = HTMLString;
+
+            return tempDiv.innerHTML;
         }
     });
 
