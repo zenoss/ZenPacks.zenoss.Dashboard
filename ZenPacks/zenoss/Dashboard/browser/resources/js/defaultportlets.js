@@ -1464,21 +1464,21 @@
         },
         fetchEvents: function() {
             // gets all the open events for now
-            var start = new Date(), params;
-            start.setDate(start.getDate() - this.daysPast);
+            var lastTime = new Date(), params;
+            lastTime.setDate(lastTime.getDate() - this.daysPast);
 
             params = {
                 start: 0,
                 limit: 5000,
-                sort: 'firstTime',
+                sort: 'lastTime',
                 dir: 'ASC',
-                keys: ['severity', 'firstTime'],
+                keys: ['severity', 'lastTime'],
                 params: {
                     eventClass: this.eventClass,
                     severity: [Zenoss.SEVERITY_CRITICAL, Zenoss.SEVERITY_ERROR, Zenoss.SEVERITY_WARNING, Zenoss.SEVERITY_INFO],
                     eventState: [],
                     // format a time range Zep can understand
-                    lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
+                    lastTime: Ext.Date.format(lastTime, 'time'),
                     summary: this.summaryFilter
                 }
             };
@@ -1495,7 +1495,7 @@
             var store = this.down('chart').getStore(), data = [], events = response.events, i, counts={}, event, key;
             for (i=0; i < events.length; i++) {
                 event = events[i];
-                key = Ext.Date.format(new Date(event.firstTime * 1000), "D ha");
+                key = Ext.Date.format(new Date(event.lastTime * 1000), "D ha");
                 if (!Ext.isDefined(counts[key])) {
                     counts[key] = {};
                     counts[key][Zenoss.SEVERITY_CRITICAL] = 0;
