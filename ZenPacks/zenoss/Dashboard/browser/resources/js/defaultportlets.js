@@ -1769,40 +1769,12 @@
         alias: 'widget.eventviewportlet',
         height: 400,
         title: 'Event View',
-        stateId: "",
         initComponent: function(){
-            if (!this.stateId) {
-                this.stateId = Ext.id();
-            }
-            var consoleId = Ext.id(),
-                columns = this.stripIds(Zenoss.env.COLUMN_DEFINITIONS),
-                me = this;
+            this.eventsGrid = this.createEventsGrid();
+
             Ext.apply(this, {
                 items: [
-                    Ext.create('Zenoss.events.Grid', {
-                        id: consoleId,
-                        defaultFilters: {
-                            severity: [Zenoss.SEVERITY_CRITICAL, Zenoss.SEVERITY_ERROR, Zenoss.SEVERITY_WARNING, Zenoss.SEVERITY_INFO],
-                            eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
-                            // _managed_objects is a global function sent from the server, see ZenUI3/security/security.py
-                            tags: _managed_objects()
-                        },
-                        stateId: this.stateId,
-                        stateful: true,
-                        columns: columns,
-                        enableTextSelection: true,
-                        store: Ext.create('Zenoss.events.Store', {
-                            listeners: {
-                                load: function(store) {
-                                    // work around a bug where the total wasn't displayed
-                                    me.down('livegridinfopanel')._doOnScroll();
-                                }
-                            }
-                        }),
-                        selModel: Ext.create('Zenoss.EventPanelSelectionModel', {
-                            gridId: consoleId
-                        })
-                    })
+                    this.eventsGrid
                 ]
             });
 
@@ -1821,15 +1793,76 @@
         // no user defineable configuration for now
         getConfig: function() {
             return {
-                stateId: this.stateId
+                base64State: this.base64State || this.stateToBase64String()
             };
         },
         applyConfig: function(config) {
+            var isEditingMode = config.previewConfig && config.previewConfig.base64State;
+            if (isEditingMode) {
+                this.base64State = config.previewConfig.base64State;
+
+                this.remove(this.eventsGrid.id);
+
+                this.eventsGrid = this.createEventsGrid();
+                this.add(this.eventsGrid);
+            }
+
             this.callParent([config]);
         },
         getCustomConfigFields: function() {
             var fields = [];
             return fields;
+        },
+        base64StringToState: function (base64String) {
+            return Ext.decode(Zenoss.util.base64.decode(decodeURIComponent(base64String)));
+        },
+        stateToBase64String: function () {
+            return Zenoss.util.base64.encode(Ext.encode(this.eventsGrid.getState()));
+        },
+        createEventsGrid: function () {
+            var consoleId = Ext.id(),
+                columns = this.stripIds(Zenoss.env.COLUMN_DEFINITIONS),
+                me = this;
+
+            var grid = Ext.create('Zenoss.events.Grid', {
+                stateful: false,
+                id: consoleId,
+                defaultFilters: {
+                    severity: [Zenoss.SEVERITY_CRITICAL, Zenoss.SEVERITY_ERROR, Zenoss.SEVERITY_WARNING, Zenoss.SEVERITY_INFO],
+                    eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
+                    // _managed_objects is a global function sent from the server, see ZenUI3/security/security.py
+                    tags: _managed_objects()
+                },
+                columns: columns,
+                enableTextSelection: true,
+                store: Ext.create('Zenoss.events.Store', {
+                    listeners: {
+                        load: function (store) {
+                            // work around a bug where the total wasn't displayed
+                            me.down('livegridinfopanel')._doOnScroll();
+                        }
+                    }
+                }),
+                selModel: Ext.create('Zenoss.EventPanelSelectionModel', {
+                    gridId: consoleId
+                }),
+                listeners: {
+                    afterrender: function () {
+                        var isEditingMode = this.up('editportletdialog');
+                        if (isEditingMode) {
+                            me.base64State = undefined;
+                        }
+                    }
+                }
+            });
+
+            grid.filterRow.clearFilters();
+
+            if (this.base64State) {
+                grid.applyState(this.base64StringToState(this.base64State));
+            }
+
+            return grid;
         }
     });
 
