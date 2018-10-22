@@ -330,8 +330,10 @@
         addPortlet: function(portletConfig) {
             // TODO: find the column that is the smallest
             // add the portlet to it
-            var columns = this.getDashboardPanel().query('portalcolumn');
-            columns[0].insert(0, portletConfig);
+            var dashboard = this.getDashboardPanel();
+            var column = dashboard.query('portalcolumn')[0] || dashboard.insert(0, dashboard.createColumn());
+
+            column.insert(0, portletConfig);
         },
         /**
          * returns a JSON encoded string that is the dashboards "layout".
