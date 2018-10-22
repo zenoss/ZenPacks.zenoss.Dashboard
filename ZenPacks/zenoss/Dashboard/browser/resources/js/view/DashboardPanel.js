@@ -118,6 +118,8 @@
             portlet = Ext.create(portletCls, {
                 // make sure the header gear icon is not displayed
                 tools: [],
+                collapsible: false,
+                closable: false,
                 draggable: false
             });
             items = portlet.getConfigFields();
