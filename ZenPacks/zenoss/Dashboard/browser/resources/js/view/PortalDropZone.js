@@ -249,7 +249,7 @@ Ext.define('Zenoss.Dashboard.view.PortalDropZone', {
 
     // unregister the dropzone from ScrollManager
     unreg: function() {
-        Ext.dd.ScrollManager.unregister(this.portal.body);
+        Ext.dd.ScrollManager.unregister(this.dashboard.body);
         Zenoss.Dashboard.view.PortalDropZone.superclass.unreg.call(this);
     }
 });
