@@ -331,7 +331,11 @@
             // TODO: find the column that is the smallest
             // add the portlet to it
             var dashboard = this.getDashboardPanel();
-            var column = dashboard.query('portalcolumn')[0] || dashboard.insert(0, dashboard.createColumn());
+            var column = dashboard.query('portalcolumn')[0];
+
+            if (!column) {
+                column = dashboard.add(dashboard.createColumn());
+            }
 
             column.insert(0, portletConfig);
         },
