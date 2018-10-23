@@ -118,9 +118,9 @@
             portlet = Ext.create(portletCls, {
                 // make sure the header gear icon is not displayed
                 tools: [],
+                draggable: false,
                 collapsible: false,
-                closable: false,
-                draggable: false
+                closable: false
             });
             items = portlet.getConfigFields();
             configPanel.removeAll();
