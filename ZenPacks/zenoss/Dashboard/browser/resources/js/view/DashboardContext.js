@@ -106,7 +106,8 @@
                 userGroup = this.down('radio[itemId="usergroup"]').getValue();
             // only one can be selected
             if (global) {
-                return "/zport/dmd/ZenUsers";
+                // concat to prevent adding cz prefix by nginx
+                return "/" + "zport/dmd/ZenUsers";
             }
 
             if (userGroup) {

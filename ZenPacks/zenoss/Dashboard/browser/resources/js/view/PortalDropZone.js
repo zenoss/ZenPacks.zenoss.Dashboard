@@ -6,13 +6,6 @@
 Ext.define('Zenoss.Dashboard.view.PortalDropZone', {
     extend: 'Ext.dd.DropTarget',
 
-    constructor: function(portal, cfg) {
-        this.portal = portal;
-        Ext.dd.ScrollManager.register(portal.body);
-        Zenoss.Dashboard.view.PortalDropZone.superclass.constructor.call(this, portal.body, cfg);
-        portal.body.ddScrollConfig = this.ddScrollConfig;
-    },
-
     ddScrollConfig: {
         vthresh: 50,
         hthresh: -1,
@@ -20,180 +13,243 @@ Ext.define('Zenoss.Dashboard.view.PortalDropZone', {
         increment: 200
     },
 
-    createEvent: function(dd, e, data, col, c, pos) {
-        return {
-            portal: this.portal,
-            panel: data.panel,
-            columnIndex: col,
-            column: c,
-            position: pos,
-            data: data,
-            source: dd,
-            rawEvent: e,
-            status: this.dropAllowed
-        };
+    constructor: function (dashboard, cfg) {
+        this.dashboard = dashboard;
+        Ext.dd.ScrollManager.register(dashboard.body);
+        dashboard.body.ddScrollConfig = this.ddScrollConfig;
+
+        this.callParent([dashboard.body, cfg]);
+    },
+
+    getOverEvent: function (dd, e, data) {
+        var dashboard = this.dashboard,
+            dbody = dashboard.body,
+            items = dashboard.items.items,
+            scroll = dbody.getScroll(),
+            bodyBox = dbody.getBox(),
+            count = items.length,
+            xy = e.getXY(),
+            x = xy[0] - bodyBox.x + scroll.left,
+            y = xy[1] - bodyBox.y + scroll.top,
+            colRegion, colBox,
+            // top, right, bottom, left
+            pointRegion = new Ext.util.Region(xy[1], xy[0]+50, xy[1]+50, xy[0]),
+            over = {
+                columnIndex: 0,
+                column: null,
+                dashboard: dashboard,
+                above: null,
+                extensible: false,
+                beforeAfter: 0,
+                data: data,
+                panel: data.panel,
+                rawEvent: e,
+                source: dd,
+                status: this.dropAllowed
+            },
+            t, ht, i, k, item, w, childCount, childItems, childItem;
+
+        for (i = 0; i < count; i += 2) {
+            item = items[i];
+            w = item.lastBox.width;
+            colBox = item.getBox();
+            if (items[i+1]) {
+                w += items[i+1].lastBox.width;
+            }
+            // colRegion = item.getEl().getRegion();
+            // create column region from column lastBox width/height and current box x/y
+            // because when we start dragging item it became ghost and column lose dimensions
+            colRegion = new Ext.util.Region(colBox.y, colBox.x+item.lastBox.width, colBox.y+item.lastBox.height, colBox.x);
+            if (colRegion.contains(pointRegion)) {
+                over.columnIndex = i;
+                over.column = item;
+                over.extensible = this.isRowExtensible(item.rowIndex);
+                // 200 - default threshold  when we want to create new column;
+                t = Math.min(200, w * 0.2);
+                over.beforeAfter = t = (over.extensible && ((x < t) ? -1 : ((x > w - t) ? 1 : 0)));
+
+                if (!t || !over.extensible) {
+                    childItems = item.items.items;
+                    // if we are not on an edge OR reached maxColumns (which means "insert the panel in
+                    // between the columns"), we need to dig one more level down
+                    for (k = 0, childCount = childItems.length; k < childCount; ++k) {
+                        childItem = childItems[k];
+                        ht = childItem.el.getHeight();
+                        if (y < ht / 2) {
+                            // if mouse is above the current child's top, Y coord, it
+                            // is considered as "above" the previous child
+                            over.above = childItem;
+                            break;
+                        }
+                        y -= ht;
+                    }
+                }
+                break;
+            }
+            x -= w;
+        }
+        return over;
     },
 
     notifyOver: function(dd, e, data) {
         // disallow dragging the dashboard if it is locked
         var dashboard = window.globalApp.getController("DashboardController").getCurrentDashboard();
         if (dashboard && dashboard.get('locked')) {
-            return;
+            return this.dropNotAllowed;
         }
-        var xy = e.getXY(),
-            portal = this.portal,
-            proxy = dd.proxy;
+        var me = this,
+            dashboard = me.dashboard,
+            over = me.getOverEvent(dd, e, data),
+            colEl = over.column && over.column.el,
+            proxy = dd.proxy,
+            proxyProxy,
+            aboveItem = over.above,
+            colWidth, width = 0,
+            padding,
+            scrollWidth,
+            hasListeners = dashboard.hasListeners;
 
-        // case column widths
-        if (!this.grid) {
-            this.grid = this.getGrid();
-        }
+        data.lastOver = over;
 
-        // handle case scroll where scrollbars appear during drag
-        var cw = portal.body.dom.clientWidth;
-        if (!this.lastCW) {
-            // set initial client width
-            this.lastCW = cw;
-        } else if (this.lastCW !== cw) {
-            // client width has changed, so refresh layout & grid calcs
-            this.lastCW = cw;
-            //portal.doLayout();
-            this.grid = this.getGrid();
-        }
+        if ((!hasListeners.validatedrop || dashboard.fireEvent('validatedrop', over) !== false) &&
+            (!hasListeners.beforedragover || dashboard.fireEvent('beforedragover', over) !== false ))
+            {
 
-        // determine column
-        var colIndex = 0,
-            colRight = 0,
-            cols = this.grid.columnX,
-            len = cols.length,
-            cmatch = false;
-
-        for (len; colIndex < len; colIndex++) {
-            colRight = cols[colIndex].x + cols[colIndex].w;
-            if (xy[0] < colRight) {
-                cmatch = true;
-                break;
-            }
-        }
-        // no match, fix last index
-        if (!cmatch) {
-            colIndex--;
-        }
-
-        // find insert position
-        var overPortlet, pos = 0,
-            h = 0,
-            match = false,
-            overColumn = portal.items.getAt(colIndex),
-            portlets = overColumn.items.items,
-            overSelf = false;
-
-        len = portlets.length;
-
-        for (len; pos < len; pos++) {
-            overPortlet = portlets[pos];
-            h = overPortlet.el.getHeight();
-            if (h === 0) {
-                overSelf = true;
-            } else if ((overPortlet.el.getY() + (h / 2)) > xy[1]) {
-                match = true;
-                break;
-            }
-        }
-
-        pos = (match && overPortlet ? pos : overColumn.items.getCount()) + (overSelf ? -1 : 0);
-        var overEvent = this.createEvent(dd, e, data, colIndex, overColumn, pos);
-
-        if (portal.fireEvent('validatedrop', overEvent) !== false && portal.fireEvent('beforedragover', overEvent) !== false) {
-
+            proxyProxy = dd.panelProxy.getProxy();
             // make sure proxy width is fluid in different width columns
             proxy.getProxy().setWidth('auto');
-            if (overPortlet) {
-                dd.panelProxy.moveProxy(overPortlet.el.dom.parentNode, match ? overPortlet.el.dom : null);
+
+            if (colEl) {
+                width = colWidth = colEl.getWidth();
+                // A floating column was targeted
+                if (over.beforeAfter) {
+                    dd.panelProxy.moveProxy(colEl.dom, colEl.dom.firstChild);
+
+                    width = colWidth / 2;
+                    proxyProxy.setWidth(width);
+
+                } else {
+                    if (aboveItem) {
+                        dd.panelProxy.moveProxy(aboveItem.el.dom.parentNode, aboveItem.el.dom);
+                    } else {
+                        dd.panelProxy.moveProxy(colEl.dom, null);
+                    }
+                    proxyProxy.setWidth('auto');
+
+                }
+                proxyProxy.setStyle({
+                    'float': 'none',
+                    'clear' : 'none',
+                    'margin-left': (over.beforeAfter > 0) ? (colWidth - width - colEl.getPadding('lr')) + 'px' : ''
+                });
             } else {
-                dd.panelProxy.moveProxy(overColumn.el.dom, null);
+                padding = dashboard.body.getPadding('lr');
+                scrollWidth = dashboard.body.isScrollable() ? Ext.getScrollBarWidth() : 0;
+                proxyProxy.setStyle({
+                    'float' : 'left',
+                    'clear' : 'left'
+                });
+                proxyProxy.setWidth(dashboard.body.getWidth() - padding - scrollWidth);
+                // Target the innerCt for the move
+                dd.panelProxy.moveProxy(dashboard.body.dom.firstChild.lastChild, null);
             }
+            this.scrollPos = dashboard.body.getScroll();
 
-            this.lastPos = {
-                c: overColumn,
-                col: colIndex,
-                p: overSelf || (match && overPortlet) ? pos : false
-            };
-            this.scrollPos = portal.body.getScroll();
-
-            portal.fireEvent('dragover', overEvent);
-            return overEvent.status;
-        } else {
-            return overEvent.status;
+            if (hasListeners.dragover) {
+                dashboard.fireEvent('dragover', over);
+            }
         }
 
+        return over.status;
     },
 
-    notifyOut: function() {
-        delete this.grid;
+    isRowExtensible : function(rowIndex) {
+        var me = this,
+            dashboard = me.dashboard,
+            maxColumns = dashboard.getMaxColumns() || 1;
+
+        return Ext.Array.from(dashboard.query('>portalcolumn[rowIndex=' + rowIndex + ']')).length < maxColumns;
     },
 
-    notifyDrop: function(dd, e, data) {
-        delete this.grid;
-        if (!this.lastPos) {
+    notifyDrop: function (dd, e, data) {
+        this.callParent(arguments);
+        if (!data.lastOver) return false;
+
+        var dashboard = this.dashboard,
+            over = data.lastOver,
+            panel = over.panel,
+            fromCt = panel.ownerCt,
+            toCt = over.column,
+            side = toCt ? over.beforeAfter : 1,
+            currentIndex = fromCt.items.indexOf(panel),
+            newIndex = toCt ? (over.above ? toCt.items.indexOf(over.above) : toCt.items.getCount()) : 0,
+            colIndex, newCol,
+            hasListeners = dashboard.hasListeners;
+
+        //Same column tests
+        if (fromCt === toCt) {
+            if (fromCt.items.getCount() === 1) {
+                return;
+            }
+            if (!side) {
+                if (currentIndex < newIndex) {
+                    --newIndex;
+                }
+                if (currentIndex === newIndex) {
+                    return;
+                }
+            }
+        }
+
+        if ((hasListeners.validatedrop && dashboard.fireEvent('validatedrop', over) === false) ||
+            (hasListeners.beforedrop && dashboard.fireEvent('beforedrop', over) === false)) {
             return;
         }
-        var c = this.lastPos.c,
-            col = this.lastPos.col,
-            pos = this.lastPos.p,
-            panel = dd.panel,
-            dropEvent = this.createEvent(dd, e, data, col, c, pos !== false ? pos : c.items.getCount());
 
         Ext.suspendLayouts();
 
-        if (this.portal.fireEvent('validatedrop', dropEvent) !== false && this.portal.fireEvent('beforedrop', dropEvent) !== false) {
+        panel.isMoving = true;
+        if (side) {
+            colIndex = dashboard.items.indexOf(toCt);
 
-            // make sure panel is visible prior to inserting so that the layout doesn't ignore it
-            panel.el.dom.style.display = '';
+            // inserting into new Row ?
+            if (colIndex < 0) {
+                colIndex = dashboard.items.getCount();
+            } else if (side > 0) {
+                ++colIndex;
+            }
 
-            if (pos !== false) {
-                c.insert(pos, panel);
+            newCol = dashboard.createColumn();
+
+            if (toCt) {
+                newCol.columnWidth = toCt.columnWidth = toCt.columnWidth / 2;
+                delete toCt.width;
             } else {
-                c.add(panel);
+                newCol.columnWidth = 1;  //full row
             }
 
-            dd.proxy.hide();
-            this.portal.fireEvent('drop', dropEvent);
-
-            // scroll position is lost on drop, fix it
-            var st = this.scrollPos.top;
-            if (st) {
-                var d = this.portal.body.dom;
-                setTimeout(function() {
-                    d.scrollTop = st;
-                },
-                10);
-            }
-
+            toCt = dashboard.insert(colIndex, newCol);
+            newIndex = 0;
         }
 
+        // make sure panel is visible prior to inserting so the layout doesn't ignore it
+        panel.el.dom.style.display = '';
+
+        toCt.insert(newIndex, panel);
+
+        panel.isMoving = false;
+
+        toCt.updateLayout();
         Ext.resumeLayouts(true);
 
-        delete this.lastPos;
-        return true;
-    },
-
-    // internal cache of body and column coords
-    getGrid: function() {
-        var box = this.portal.body.getBox();
-        box.columnX = [];
-        this.portal.items.each(function(c) {
-            box.columnX.push({
-                x: c.el.getX(),
-                w: c.el.getWidth()
-            });
-        });
-        return box;
+        if (hasListeners.drop) {
+            dashboard.fireEvent('drop', over);
+        }
     },
 
     // unregister the dropzone from ScrollManager
     unreg: function() {
-        Ext.dd.ScrollManager.unregister(this.portal.body);
+        Ext.dd.ScrollManager.unregister(this.dashboard.body);
         Zenoss.Dashboard.view.PortalDropZone.superclass.unreg.call(this);
     }
 });
