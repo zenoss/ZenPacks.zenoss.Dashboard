@@ -24,131 +24,6 @@
             '1y-ago': 31536000000
         };
 
-    var tbarDeviceChartConfig = [
-        '->',
-        "-",
-        {
-            xtype: 'drangeselector',
-            cls: 'drange_select',
-            labelWidth: 40,
-            labelAlign: "right",
-            listeners: {
-                select: function (self, records, index) {
-                    var value = records[0].data.id,
-                        panel = self.up("devicechartportlet");
-
-                    // if value is "custom", then reveal the date
-                    // picker container
-                    if (value === "custom") {
-                        panel.showDatePicker();
-
-                        // if user selected the separator, select custom
-                    } else if (value === 0) {
-                        self.setValue("custom");
-                        panel.showDatePicker();
-
-                        // otherwise, update graphs
-                    } else {
-                        // all ranges are relative to now, so set
-                        // end to current time
-                        panel.setEndToNow();
-                        panel.hideDatePicker();
-                        // update drange and start values based
-                        // on the new end value
-                        panel.setDrange(value);
-                    }
-                }
-            }
-        },
-        {
-            xtype: "container",
-            layout: "hbox",
-            cls: "date_picker_container",
-            padding: "0 10 0 0",
-            items: [
-                {
-                    xtype: 'utcdatefield',
-                    cls: 'start_date',
-                    width: 175,
-                    fieldLabel: _t('Start'),
-                    labelWidth: 40,
-                    labelAlign: "right",
-                    format: 'Y-m-d H:i:s',
-                    displayTZ: Zenoss.USER_TIMEZONE,
-                    listeners: {
-                        change: function (self, val) {
-                            var chart = self.up("devicechartportlet"), graph, panel;
-                            if (chart) {
-                                      graph = chart.getGraphs();
-                                      if (graph) {
-                                        panel = graph[0];
-                                      }
-                            }
-                            if (panel) {
-                                panel.start = moment.utc(self.getValue());
-                            }
-                        }
-                    }
-                }, {
-                    xtype: 'utcdatefield',
-                    cls: 'end_date',
-                    width: 175,
-                    fieldLabel: _t('End'),
-                    labelWidth: 40,
-                    labelAlign: "right",
-                    disabled: true,
-                    format: 'Y-m-d H:i:s',
-                    displayTZ: Zenoss.USER_TIMEZONE,
-                    listeners: {
-                        change: function (self, val) {
-                            var chart = self.up("devicechartportlet"), graph, panel;
-                            if (chart) {
-                                      graph = chart.getGraphs();
-                                      if (graph) {
-                                        panel = graph[0];
-                                      }
-                            }
-                            if (panel) {
-                                panel.end = moment.utc(self.getValue());
-                            }
-                        }
-                    }
-                }, {
-                    xtype: 'checkbox',
-                    cls: 'checkbox_now',
-                    fieldLabel: _t('Now'),
-                    labelWidth: 40,
-                    labelAlign: "right",
-                    checked: true,
-                    listeners: {
-                        change: function (self, val) {
-                            var panel = self.up("devicechartportlet");
-                            panel.query("datefield[cls='end_date']")[0].setDisabled(val);
-
-                            // if it should be now, update it
-                            if (val) {
-                                panel.setEndToNow();
-                                panel.refresh();
-                            }
-                        }
-                    }
-                }
-            ]
-        },
-        '-',
-        {
-            xtype: 'compgraphrefreshbutton',
-            ref: '../refreshmenu',
-            iconCls: 'refresh',
-            handler: function (button) {
-                var panel = button.up("devicechartportlet");
-                if (panel && panel.isVisible()) {
-                    panel.refresh();
-                }
-            }
-        }
-    ];
-
     /**
      * Device Chart Portlet. A user selects a device class
      * and a set of graph points, a time range and the portlet
@@ -158,7 +33,161 @@
         extend: 'Zenoss.Dashboard.view.Portlet',
         alias: 'widget.devicechartportlet',
         height: 500,
-        tbar: tbarDeviceChartConfig,
+        tbar: [
+            {
+                xtype: 'button',
+                text: '&lt;',
+                width: 40,
+                handler: function(btn, e) {
+                    panel = btn.up("devicechartportlet");
+                    panel.panLeft();
+                }
+            }, {
+                xtype: 'button',
+                text: _t('Zoom In'),
+                handler: function(btn, e) {
+                    panel = btn.up("devicechartportlet");
+                    panel.zoomIn();
+                }
+            }, {
+                xtype: 'button',
+                text: _t('Zoom Out'),
+                handler: function(btn, e) {
+                    panel = btn.up("devicechartportlet");
+                    panel.zoomOut();
+                }
+            }, {
+                xtype: 'button',
+                text: '&gt;',
+                width: 40,
+                handler: function(btn, e) {
+                    panel = btn.up("devicechartportlet");
+                    panel.panRight();
+                }
+            },
+            '->',
+            "-",
+            {
+                xtype: 'drangeselector',
+                cls: 'drange_select',
+                labelWidth: 40,
+                labelAlign: "right",
+                listeners: {
+                    select: function (self, records, index) {
+                        var value = records[0].data.id,
+                            panel = self.up("devicechartportlet");
+
+                        // if value is "custom", then reveal the date
+                        // picker container
+                        if (value === "custom") {
+                            panel.showDatePicker();
+
+                            // if user selected the separator, select custom
+                        } else if (value === 0) {
+                            self.setValue("custom");
+                            panel.showDatePicker();
+
+                            // otherwise, update graphs
+                        } else {
+                            // all ranges are relative to now, so set
+                            // end to current time
+                            panel.setEndToNow();
+                            panel.hideDatePicker();
+                            // update drange and start values based
+                            // on the new end value
+                            panel.setDrange(value);
+                        }
+                    }
+                }
+            },
+            {
+                xtype: "container",
+                layout: "hbox",
+                cls: "date_picker_container",
+                padding: "0 10 0 0",
+                items: [
+                    {
+                        xtype: 'utcdatefield',
+                        cls: 'start_date',
+                        width: 175,
+                        fieldLabel: _t('Start'),
+                        labelWidth: 40,
+                        labelAlign: "right",
+                        format: 'Y-m-d H:i:s',
+                        displayTZ: Zenoss.USER_TIMEZONE,
+                        listeners: {
+                            change: function (self, val) {
+                                var chart = self.up("devicechartportlet"), graph, panel;
+                                if (chart) {
+                                          graph = chart.getGraphs();
+                                          if (graph) {
+                                            panel = graph[0];
+                                          }
+                                }
+                                if (panel) {
+                                    panel.start = moment.utc(self.getValue());
+                                }
+                            }
+                        }
+                    }, {
+                        xtype: 'utcdatefield',
+                        cls: 'end_date',
+                        width: 175,
+                        fieldLabel: _t('End'),
+                        labelWidth: 40,
+                        labelAlign: "right",
+                        disabled: true,
+                        format: 'Y-m-d H:i:s',
+                        displayTZ: Zenoss.USER_TIMEZONE,
+                        listeners: {
+                            change: function (self, val) {
+                                var chart = self.up("devicechartportlet"), graph, panel;
+                                if (chart) {
+                                          graph = chart.getGraphs();
+                                          if (graph) {
+                                            panel = graph[0];
+                                          }
+                                }
+                                if (panel) {
+                                    panel.end = moment.utc(self.getValue());
+                                }
+                            }
+                        }
+                    }, {
+                        xtype: 'checkbox',
+                        cls: 'checkbox_now',
+                        fieldLabel: _t('Now'),
+                        labelWidth: 40,
+                        labelAlign: "right",
+                        checked: true,
+                        listeners: {
+                            change: function (self, val) {
+                                var panel = self.up("devicechartportlet");
+                                panel.query("datefield[cls='end_date']")[0].setDisabled(val);
+
+                                // if it should be now, update it
+                                if (val) {
+                                    panel.setEndToNow();
+                                    panel.refresh();
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            '-',
+            {
+                xtype: 'compgraphrefreshbutton',
+                ref: '../refreshmenu',
+                iconCls: 'refresh',
+                handler: function (button) {
+                    var panel = button.up("devicechartportlet");
+                    if (panel && panel.isVisible()) {
+                        panel.refresh();
+                    }
+                }
+            }
+        ],
         pan_factor: 1.25,
         overflowY: 'auto',
         title: 'Device Chart',
@@ -174,6 +203,23 @@
             });
 
             this.callParent(arguments);
+
+            this.toolbar = this.getDockedItems()[0];
+            this.startDatePicker = this.toolbar.query("utcdatefield[cls='start_date']")[0];
+            this.endDatePicker = this.toolbar.query("utcdatefield[cls='end_date']")[0];
+            this.nowCheck = this.toolbar.query("checkbox[cls='checkbox_now']")[0];
+            this.startDatePicker.setDisplayTimezone(Zenoss.USER_TIMEZONE);
+            this.endDatePicker.setDisplayTimezone(Zenoss.USER_TIMEZONE);
+            this.drange = this.rangeToMilliseconds(DATE_RANGES[0][0]);
+            this.toolbar.query("drangeselector[cls='drange_select']")[0].setValue(DATE_RANGES[0][0]);
+            // default start and end values in UTC time
+            // NOTE: do not apply timezone adjustments to these values!
+            this.start = moment.utc().subtract(this.drange, "ms");
+            this.setEndToNow();
+            // set start and end dates
+            this.updateStartDatePicker();
+            this.updateEndDatePicker();
+            this.hideDatePicker();
         },
         fetchGraphDefinition: function() {
             if (this.deviceClass && this.graphPoints.length) {
@@ -365,62 +411,6 @@
             // add it to the container
             container.removeAll();
             container.add(graph);
-
-            this.toolbar = this.getDockedItems()[1];
-            this.startDatePicker = this.toolbar.query("utcdatefield[cls='start_date']")[0];
-            this.endDatePicker = this.toolbar.query("utcdatefield[cls='end_date']")[0];
-            this.nowCheck = this.toolbar.query("checkbox[cls='checkbox_now']")[0];
-            this.startDatePicker.setDisplayTimezone(Zenoss.USER_TIMEZONE);
-            this.endDatePicker.setDisplayTimezone(Zenoss.USER_TIMEZONE);
-
-            this.toolbar.insert(0, [
-                {
-                    xtype: 'button',
-                    text: '&lt;',
-                    width: 40,
-                    handler: Ext.bind(function (btn, e) {
-                        panel = btn.up("devicechartportlet");
-                        panel.panLeft();
-                    }, this)
-                }, {
-                    xtype: 'button',
-                    text: _t('Zoom In'),
-                    handler: Ext.bind(function (btn, e) {
-                        panel = btn.up("devicechartportlet");
-                        panel.zoomIn();
-                    }, this)
-                }, {
-                    xtype: 'button',
-                    text: _t('Zoom Out'),
-                    handler: Ext.bind(function (btn, e) {
-                        panel = btn.up("devicechartportlet");
-                        panel.zoomOut();
-                    }, this)
-                }, {
-                    xtype: 'button',
-                    text: '&gt;',
-                    width: 40,
-                    handler: Ext.bind(function (btn, e) {
-                        panel = btn.up("devicechartportlet");
-                        panel.panRight();
-                    }, this)
-                },
-
-            ]); // toolbar inserts
-
-            this.drange = this.rangeToMilliseconds(DATE_RANGES[0][0]);
-            this.toolbar.query("drangeselector[cls='drange_select']")[0].setValue(DATE_RANGES[0][0]);
-
-            // default start and end values in UTC time
-            // NOTE: do not apply timezone adjustments to these values!
-            this.start = moment.utc().subtract(this.drange, "ms");
-            this.setEndToNow();
-
-            // set start and end dates
-            this.updateStartDatePicker();
-            this.updateEndDatePicker();
-
-            this.hideDatePicker();
         },
         getConfig: function() {
             var deviceClass = this.deviceClass;
@@ -526,11 +516,5 @@
             return fields;
         }
     });
-
-
-
-
-
-
 
 }());
