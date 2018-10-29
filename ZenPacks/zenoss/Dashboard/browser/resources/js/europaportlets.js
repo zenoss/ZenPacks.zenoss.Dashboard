@@ -126,6 +126,8 @@
                                 }
                                 if (panel) {
                                     panel.start = moment.utc(self.getValue());
+                                    chart.start = panel.start;
+                                    chart.refresh();
                                 }
                             }
                         }
@@ -150,6 +152,8 @@
                                 }
                                 if (panel) {
                                     panel.end = moment.utc(self.getValue());
+                                    chart.end = panel.end;
+                                    chart.refresh();
                                 }
                             }
                         }
