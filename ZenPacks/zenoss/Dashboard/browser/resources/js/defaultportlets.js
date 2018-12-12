@@ -306,7 +306,16 @@
                 value: this.content,
                 allowBlank: false,
                 height: 100,
-                width: 200
+                width: 200,
+                listeners: {
+                    afterrender: function(me) {
+                        Ext.tip.QuickTipManager.register({
+                            target: me.getId(),
+                            title : 'Warning',
+                            text  : 'Your HTML will be processed according to security rules'
+                        });
+                    }
+                }
             }];
             return fields;
         },
@@ -341,7 +350,7 @@
         },
         convertToValidHTMLString: function (HTMLString) {
             var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = HTMLString;
+            tempDiv.innerHTML = Zenoss.util.sanitizeHtml(HTMLString);
 
             return tempDiv.innerHTML;
         }
