@@ -350,8 +350,12 @@
         },
         convertToValidHTMLString: function (HTMLString) {
             var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = Zenoss.util.sanitizeHtml(HTMLString);
-
+            try {
+                tempDiv.innerHTML = Zenoss.util.sanitizeHtml(HTMLString);
+            }
+            catch {
+                tempDiv.innerHTML = HTMLString;
+            }
             return tempDiv.innerHTML;
         }
     });
