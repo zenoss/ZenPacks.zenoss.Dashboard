@@ -649,20 +649,26 @@
             };
         },
         applyConfig: function(config) {
-            var form = this.up('form');
-            if (form && form.isValid()) {
-                // ensure we are protected from xss
-                config.siteUrl = Ext.String.htmlEncode(config.siteUrl);
-                this.callParent([config]);
-                if (this.rendered){
+            if (this.rendered){
+                if (this.isValidUrl(config.siteUrl)) {
+                    this.siteUrl = Ext.String.htmlEncode(config.siteUrl);
                     this.onRefresh();
+                } else {
+                    config.siteUrl = this.siteUrl
                 }
             }
+
+            this.callParent([config]);
         },
         onRefresh: function() {
             this.down('uxiframe').load(this.getIFrameSource());
         },
+        isValidUrl: function (url) {
+            var urlPattern = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+            return urlPattern.test(url)
+        },
         getCustomConfigFields: function() {
+            var me = this;
             var fields = [{
                 xtype: 'textfield',
                 name: 'siteUrl',
@@ -670,8 +676,7 @@
                 value: this.siteUrl,
                 validateOnBlur: true,
                 validator: function(siteUrl) {
-                    var urlPattern = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                    if (!urlPattern.test(siteUrl)) {
+                    if (!me.isValidUrl(siteUrl)) {
                         return "invalid URL"
                     }
                     return true;
