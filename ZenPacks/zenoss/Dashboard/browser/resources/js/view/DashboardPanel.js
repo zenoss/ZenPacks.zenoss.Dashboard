@@ -180,7 +180,6 @@
             Ext.apply(portletConfig, {
                 tools: [],
                 draggable: false,
-                draggable: false,
                 collapsible: false,
                 closable: false
             });
