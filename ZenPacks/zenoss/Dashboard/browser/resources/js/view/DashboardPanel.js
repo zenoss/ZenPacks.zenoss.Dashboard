@@ -176,8 +176,14 @@
             }
             var portlet = config.portlet,
                 me = this, portletConfig = config.portletConfig;
-            portletConfig.tools = [];
-            portletConfig.draggable = false;
+            // ZEN-30938
+            Ext.apply(portletConfig, {
+                tools: [],
+                draggable: false,
+                draggable: false,
+                collapsible: false,
+                closable: false
+            });
             Ext.applyIf(config, {
                 height: 600,
                 width: 800,
