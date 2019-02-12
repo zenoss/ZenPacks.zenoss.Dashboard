@@ -9,7 +9,7 @@
  ****************************************************************************/
 (function() {
     Ext.ns('Zenoss.Dashboard');
-    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://www2.zenoss.com/in-app-welcome";
+    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://help.zenoss.com#main-content";
     Zenoss.Dashboard.PortletLockedTools = [{
             xtype: 'tool',
             itemId: 'fullscreenPortlet',
@@ -627,10 +627,6 @@
         siteUrl: Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL,
         initComponent: function(){
 
-            // for the default show specific welcome to this product and version
-            if (this.siteUrl === Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL) {
-                this.siteUrl += '?v=' + Zenoss.env.ZENOSS_VERSION + '&p=' + Zenoss.env.ZENOSS_PRODUCT;
-            }
             Ext.apply(this, {
                 items: [{
                     xtype: 'uxiframe',
