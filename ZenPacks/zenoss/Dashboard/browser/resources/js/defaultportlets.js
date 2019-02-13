@@ -353,7 +353,7 @@
             try {
                 tempDiv.innerHTML = Zenoss.util.sanitizeHtml(HTMLString);
             }
-            catch {
+            catch(e) {
                 tempDiv.innerHTML = HTMLString;
             }
             return tempDiv.innerHTML;
