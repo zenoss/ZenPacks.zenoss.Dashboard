@@ -32,7 +32,7 @@ except Exception:
 
 from Products.ZenModel.ZenPack import ZenPack as ZenPackBase
 
-DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"https://www2.zenoss.com/in-app-welcome?v=7.0.0&p=%s"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"%s","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
+DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"https://help.zenoss.com#main-content"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"%s","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
 
 class ZenPack(ZenPackBase):
     """
@@ -66,7 +66,7 @@ class ZenPack(ZenPackBase):
             dashboard = Dashboard('default')
             dashboard.columns = 2
             dashboard.owner = 'admin'
-            dashboard.state = DEFAULT_DASHBOARD_STATE % (site, baselocation)
+            dashboard.state = DEFAULT_DASHBOARD_STATE % (baselocation)
             dmd.ZenUsers.dashboards._setObject('default', dashboard)
 
     def remove(self, dmd, leaveObjects=False):

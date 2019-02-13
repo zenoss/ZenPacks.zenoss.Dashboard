@@ -9,7 +9,7 @@
  ****************************************************************************/
 (function() {
     Ext.ns('Zenoss.Dashboard');
-    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://www2.zenoss.com/in-app-welcome";
+    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://help.zenoss.com#main-content";
     Zenoss.Dashboard.PortletLockedTools = [{
             xtype: 'tool',
             itemId: 'fullscreenPortlet',
@@ -74,7 +74,8 @@
             }
         });
     };
-    Zenoss.Dashboard.eventRenderer = function(value, metaData, record) {
+
+    Zenoss.Dashboard.eventRenderer = function(navigateTo, value, metaData, record) {
         var table = Zenoss.render.events(value),
             uid = record.data.uid,
             url;
@@ -82,10 +83,19 @@
         // no table return empty string in case of null/undefined/false (to not show that in view);
         if (!table) return '';
 
-        if (uid.indexOf('/devices/') < 0) {
-            url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'));
-        } else {
-            url = Zenoss.render.link(false, uid + '/devicedetail?filter=default#deviceDetailNav:device_events');
+        switch (navigateTo) {
+            case 'events': {
+                url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'))+':events_grid';
+                break;
+            }
+            case 'details': {
+                url = Zenoss.render.link(false, uid + '/devicedetail?filter=default#deviceDetailNav:device_events');
+                break;
+            }
+            default: { // devices
+                url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'));
+                break;
+            }
         }
         return table.replace('<table', '<table onclick="location.href=\''+url+'\';" ');
     };
@@ -306,7 +316,16 @@
                 value: this.content,
                 allowBlank: false,
                 height: 100,
-                width: 200
+                width: 200,
+                listeners: {
+                    afterrender: function(me) {
+                        Ext.tip.QuickTipManager.register({
+                            target: me.getId(),
+                            title : 'Warning',
+                            text  : 'Your HTML will be processed according to security rules'
+                        });
+                    }
+                }
             }];
             return fields;
         },
@@ -341,8 +360,12 @@
         },
         convertToValidHTMLString: function (HTMLString) {
             var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = HTMLString;
-
+            try {
+                tempDiv.innerHTML = Zenoss.util.sanitizeHtml(HTMLString);
+            }
+            catch(e) {
+                tempDiv.innerHTML = HTMLString;
+            }
             return tempDiv.innerHTML;
         }
     });
@@ -614,10 +637,6 @@
         siteUrl: Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL,
         initComponent: function(){
 
-            // for the default show specific welcome to this product and version
-            if (this.siteUrl === Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL) {
-                this.siteUrl += '?v=' + Zenoss.env.ZENOSS_VERSION + '&p=' + Zenoss.env.ZENOSS_PRODUCT;
-            }
             Ext.apply(this, {
                 items: [{
                     xtype: 'uxiframe',
@@ -636,20 +655,26 @@
             };
         },
         applyConfig: function(config) {
-            var form = this.up('form');
-            if (form && form.isValid()) {
-                // ensure we are protected from xss
-                config.siteUrl = Ext.String.htmlEncode(config.siteUrl);
-                this.callParent([config]);
-                if (this.rendered){
+            if (this.rendered){
+                if (this.isValidUrl(config.siteUrl)) {
+                    this.siteUrl = Ext.String.htmlEncode(config.siteUrl);
                     this.onRefresh();
+                } else {
+                    config.siteUrl = this.siteUrl
                 }
             }
+
+            this.callParent([config]);
         },
         onRefresh: function() {
             this.down('uxiframe').load(this.getIFrameSource());
         },
+        isValidUrl: function (url) {
+            var urlPattern = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+            return urlPattern.test(url)
+        },
         getCustomConfigFields: function() {
+            var me = this;
             var fields = [{
                 xtype: 'textfield',
                 name: 'siteUrl',
@@ -657,8 +682,7 @@
                 value: this.siteUrl,
                 validateOnBlur: true,
                 validator: function(siteUrl) {
-                    var urlPattern = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                    if (!urlPattern.test(siteUrl)) {
+                    if (!me.isValidUrl(siteUrl)) {
                         return "invalid URL"
                     }
                     return true;
@@ -754,7 +778,7 @@
                         header: _t('Events'),
                         sortable: true,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: Zenoss.Dashboard.eventRenderer
+                        renderer: Zenoss.Dashboard.eventRenderer.bind(this, 'details')
                     }]
                 }]
             });
@@ -1025,7 +1049,7 @@
                         width: 120,
                         hideable: false,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: Zenoss.Dashboard.eventRenderer
+                        renderer: Zenoss.Dashboard.eventRenderer.bind(this, 'events')
                     }, {
                         xtype: 'actioncolumn',
                         width: 60,
@@ -1934,7 +1958,7 @@
                         header: _t('Events'),
                         width: 120,
                         doSort: Zenoss.Dashboard.eventSort,
-                        renderer: Zenoss.Dashboard.eventRenderer
+                        renderer: Zenoss.Dashboard.eventRenderer.bind(this, 'events')
                     }]
                 }]
             });
