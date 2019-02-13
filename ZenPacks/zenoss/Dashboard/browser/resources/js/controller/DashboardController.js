@@ -204,7 +204,7 @@
                     router.saveDashboard(params, function(response) {
                         if (response.success) {
                             win.close();
-                            this.reloadDashboards(response.data.id);
+                            this.reloadDashboards(response.data.id, true);
                         }
                     }, this);
                 }, this);
@@ -220,7 +220,7 @@
         /**
          * Reloads the dashboard drop down and if an id is passed in selects it
          **/
-        reloadDashboards: function(id) {
+        reloadDashboards: function(id, refreshColumns) {
             this.getDashboardSelecter().getStore().load({
                 callback: function() {
                     if (id) {
@@ -228,7 +228,7 @@
                         record = combo.getStore().findRecord('id', id);
                         if (record) {
                             combo.setValue(record.get('uid'));
-                            this.renderCurrentDashboard();
+                            this.renderCurrentDashboard(refreshColumns);
                         }
                     }
                 },
@@ -356,10 +356,13 @@
                     portlet.title = Ext.htmlDecode(portlet.title);
                     items.push(this.extractPortlet(portlet));
                 }
-                state.push({
-                    columnWidth: column.columnWidth,
-                    items: items
-                });
+                if (items.length) {
+                    state.push({
+                        columnWidth: column.columnWidth,
+                        rowIndex: column.rowIndex,
+                        items: items
+                    });
+                }
                 items = [];
             }
             return Ext.JSON.encode(state);
@@ -368,25 +371,36 @@
          * Draws the dashboard based on the saved state of the selected Dashboard.
          *
          **/
-        renderCurrentDashboard: function() {
+        renderCurrentDashboard: function(refreshColumns) {
             var dashboard = this.getCurrentDashboard();
             if (dashboard) {
                 var panel = this.getDashboardPanel(), i,
                     state = dashboard.get('state'), columns=[],
-                    columnsCount = dashboard.get('columns');
+                    columnsCount = dashboard.get('columns'),
+                    oldMaxColumnsCount = panel.getMaxColumns();
+
                 panel.setMaxColumns(columnsCount);
                 if (state) {
                     columns = Ext.JSON.decode(state);
-                    /*if (columns.length !== dashboard.get('columns')) {
-                        columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
+                    // <ZEN-30923>
+                    // add new columns in first row if user edit dashboard and increase columns count.
+                    // NOTE - will be added new empty columns in t first row,
+                    //  all columns in first row will receive same width,
+                    //  if column will not be filled with some portlet, on reload
+                    //  this column will be removed!
+                    // strict check if "refreshColumns === true" - because "renderCurrentDashboard" fn
+                    // is used as "select" event listener for dashboard combobox.
+                    if (refreshColumns === true && oldMaxColumnsCount < panel.getMaxColumns()) {
+                        columns = this.addNewColumns(columns, columnsCount);
                         this.saveDashboardState();
-                    }*/
+                    }
                 } else {
                     // if there is no state (it is a new dashboard or an empty one)
                     // just add placeholders for the columns
                     for (i=0; i<columnsCount; i++) {
                         columns.push({
                             columnWidth: 1/columnsCount,
+                            rowIndex: 0,
                             items: []
                         });
                     }
@@ -434,29 +448,27 @@
             });
         },
         /**
-         * This happens when the saved state of the portlet config
-         * differs from the saved number of columns for a dashboard
+         * Increase first row columns count if columnsCount > columnsPer row
          **/
-        movePortletsToColumns: function(columns, columnsCount) {
-            var portlets = [], i, newColumns=[];
+        addNewColumns: function(columns, columnsCount) {
+            var newColumns=[], colPerRow = 0, i;
             Ext.each(columns, function(col){
-                portlets = portlets.concat(col.items);
+                if (col.rowIndex === 0) {
+                    colPerRow +=1;
+                    col.columnWidth = 1/columnsCount;
+                    newColumns.push(col);
+                } else {
+                    newColumns.push(col);
+                }
             });
-            for (i=0; i<columnsCount; i++) {
+            for (i=colPerRow; i<columnsCount; i++) {
                 newColumns.push({
                     columnWidth: 1/columnsCount,
+                    rowIndex: 0,
                     items: []
                 });
             }
-            i=0;
-            Ext.each(portlets, function(portlet){
-                newColumns[i].items.push(portlet);
-                i++;
-                if (i === columnsCount) {
-                    i=0;
-                }
-            });
-            return newColumns;
+            return newColumns.sort(function(a,b){return a.rowIndex-b.rowIndex;});
         }
     });
 })();
