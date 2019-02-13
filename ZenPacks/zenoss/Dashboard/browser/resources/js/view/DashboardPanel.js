@@ -118,7 +118,9 @@
             portlet = Ext.create(portletCls, {
                 // make sure the header gear icon is not displayed
                 tools: [],
-                draggable: false
+                draggable: false,
+                collapsible: false,
+                closable: false
             });
             items = portlet.getConfigFields();
             configPanel.removeAll();
@@ -174,8 +176,13 @@
             }
             var portlet = config.portlet,
                 me = this, portletConfig = config.portletConfig;
-            portletConfig.tools = [];
-            portletConfig.draggable = false;
+            // ZEN-30938
+            Ext.apply(portletConfig, {
+                tools: [],
+                draggable: false,
+                collapsible: false,
+                closable: false
+            });
             Ext.applyIf(config, {
                 height: 600,
                 width: 800,
@@ -292,7 +299,11 @@
                     xtype: 'textfield',
                     maskRe: /[a-zA-Z0-9-_~,.$\(\)# @]/,
                     fieldLabel: _t('Dashboard Name'),
-                    allowBlank: false
+                    allowBlank: false,
+                    validator: Ext.bind(function(value) {
+                        // validate new dashboard name
+                        return this.dashboardIds.indexOf(value) === -1 ? true : _t('Name is already in use');
+                    }, this)
                 }, {
                     xtype: 'dashboardcontext'
                 }, {
@@ -327,6 +338,9 @@
             });
 
             this.callParent([config]);
+            var dashboardsStore = Ext.getStore('currentDashboard');
+            // collect already stored dashboard id's to validate later "Dashboard Name" field;
+            this.dashboardIds = dashboardsStore.collect('id');
         },
         initComponent: function() {
             this.addEvents('newdashboard');
@@ -426,7 +440,7 @@
                         itemId: 'currentDashboard',
                         displayField: 'idwithOwner',
                         valueField: 'uid',
-                        store: Ext.create('Zenoss.Dashboard.model.DashboardStore', {}),
+                        store: Ext.create('Zenoss.Dashboard.model.DashboardStore', {storeId: 'currentDashboard'}),
                         listeners: {
                             afterrender: function(combo) {
                                 combo.getStore().on('load', function() {

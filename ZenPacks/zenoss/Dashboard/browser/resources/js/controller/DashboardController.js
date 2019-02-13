@@ -330,8 +330,14 @@
         addPortlet: function(portletConfig) {
             // TODO: find the column that is the smallest
             // add the portlet to it
-            var columns = this.getDashboardPanel().query('portalcolumn');
-            columns[0].insert(0, portletConfig);
+            var dashboard = this.getDashboardPanel();
+            var column = dashboard.query('portalcolumn')[0];
+
+            if (!column) {
+                column = dashboard.add(dashboard.createColumn());
+            }
+
+            column.insert(0, portletConfig);
         },
         /**
          * returns a JSON encoded string that is the dashboards "layout".
@@ -351,7 +357,7 @@
                     items.push(this.extractPortlet(portlet));
                 }
                 state.push({
-                    id: 'col-' + i.toString(),
+                    columnWidth: column.columnWidth,
                     items: items
                 });
                 items = [];
@@ -366,19 +372,21 @@
             var dashboard = this.getCurrentDashboard();
             if (dashboard) {
                 var panel = this.getDashboardPanel(), i,
-                    state = dashboard.get('state'), columns=[];
+                    state = dashboard.get('state'), columns=[],
+                    columnsCount = dashboard.get('columns');
+                panel.setMaxColumns(columnsCount);
                 if (state) {
                     columns = Ext.JSON.decode(state);
-                    if (columns.length !== dashboard.get('columns')) {
+                    /*if (columns.length !== dashboard.get('columns')) {
                         columns = this.movePortletsToColumns(columns, dashboard.get('columns'));
                         this.saveDashboardState();
-                    }
+                    }*/
                 } else {
                     // if there is no state (it is a new dashboard or an empty one)
                     // just add placeholders for the columns
-                    for (i=0; i<dashboard.get('columns'); i++) {
+                    for (i=0; i<columnsCount; i++) {
                         columns.push({
-                            id: 'col-' + i.toString(),
+                            columnWidth: 1/columnsCount,
                             items: []
                         });
                     }
@@ -402,6 +410,7 @@
                     });
                 }
                 Ext.resumeLayouts(true);
+                panel.updateLayout();
             }
         },
         /**
@@ -428,14 +437,14 @@
          * This happens when the saved state of the portlet config
          * differs from the saved number of columns for a dashboard
          **/
-        movePortletsToColumns: function(columns, columnLength) {
+        movePortletsToColumns: function(columns, columnsCount) {
             var portlets = [], i, newColumns=[];
             Ext.each(columns, function(col){
                 portlets = portlets.concat(col.items);
             });
-            for (i=0; i<columnLength; i++) {
+            for (i=0; i<columnsCount; i++) {
                 newColumns.push({
-                    id: 'col-' + i.toString(),
+                    columnWidth: 1/columnsCount,
                     items: []
                 });
             }
@@ -443,7 +452,7 @@
             Ext.each(portlets, function(portlet){
                 newColumns[i].items.push(portlet);
                 i++;
-                if (i === columnLength) {
+                if (i === columnsCount) {
                     i=0;
                 }
             });
