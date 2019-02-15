@@ -85,7 +85,7 @@
 
         switch (navigateTo) {
             case 'events': {
-                url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'))+':events_grid';
+                url = Zenoss.render.DeviceClass(uid, '')+':events_grid';
                 break;
             }
             case 'details': {
