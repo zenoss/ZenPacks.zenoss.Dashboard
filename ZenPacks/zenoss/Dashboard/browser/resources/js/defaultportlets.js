@@ -85,7 +85,7 @@
 
         switch (navigateTo) {
             case 'events': {
-                url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#devices:'+uid.replace(/\//g, '.'))+':events_grid';
+                url = Zenoss.render.DeviceClass(uid, '')+':events_grid';
                 break;
             }
             case 'details': {
@@ -163,7 +163,13 @@
                  * Fires immediately after the config has been updated on a portlet
                  * @param {Zenoss.Dashboard.view.Portlet} this
                  */
-                'applyconfig'
+                'applyconfig',
+                /**
+                 * @event change
+                 * Should be fired when the portlet change its state
+                 * @param {Zenoss.Dashboard.view.Portlet} this
+                 */
+                'change'
             );
 
             this.callParent(arguments);
@@ -1836,8 +1842,9 @@
         },
         // no user defineable configuration for now
         getConfig: function() {
+            this.base64State = this.stateToBase64String();
             return {
-                base64State: this.base64State || this.stateToBase64String()
+                base64State: this.base64State
             };
         },
         applyConfig: function(config) {
@@ -1896,6 +1903,11 @@
                         if (isEditingMode) {
                             me.base64State = undefined;
                         }
+                    },
+                    // <ZEN-31360>
+                    // on filter change save grid state
+                    filterschanged: function () {
+                        me.fireEvent('change', this);
                     }
                 }
             });

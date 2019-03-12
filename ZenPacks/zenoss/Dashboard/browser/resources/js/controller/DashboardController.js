@@ -46,7 +46,9 @@
                 },
                 'portlet': {
                     close: this.saveDashboardState,
-                    resize: this.saveDashboardState
+                    resize: this.saveDashboardState,
+                    // <ZEN-31360> save portlets state also on "change"
+                    change: this.saveDashboardState
                 },
                 'portlet tool[itemId="editPortlet"]': {
                     click: this.showEditPortletDialog
