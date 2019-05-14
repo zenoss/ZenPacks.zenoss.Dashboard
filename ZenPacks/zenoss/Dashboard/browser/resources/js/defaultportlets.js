@@ -653,7 +653,8 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            return this.siteUrl;
+            var siteUrl = this.siteUrl.replace('viewGraph', 'viewGraphPortlet');
+            return siteUrl;
         },
         getConfig: function() {
             return {
