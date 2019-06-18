@@ -9,7 +9,11 @@
  ****************************************************************************/
 (function() {
     Ext.ns('Zenoss.Dashboard');
-    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || "https://help.zenoss.com#main-content";
+    var default_sitewindow_url = "https://help.zenoss.com#main-content";
+    if (Zenoss.env.ZENOSS_VERSION && Zenoss.env.ZENOSS_VERSION[0] == "6") {
+        default_sitewindow_url = "https://help.zenoss.com/zsd#main-content"
+    }
+    Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || default_sitewindow_url;
     Zenoss.Dashboard.PortletLockedTools = [{
             xtype: 'tool',
             itemId: 'fullscreenPortlet',
