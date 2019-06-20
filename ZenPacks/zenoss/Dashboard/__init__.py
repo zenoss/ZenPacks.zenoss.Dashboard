@@ -5,6 +5,7 @@ from zope.component import getUtility
 from Products.CMFCore.DirectoryView import registerDirectory
 from Products.ZenRelations.RelSchema import ToOne, ToManyCont
 from Products.ZenModel.UserSettings import UserSettings, UserSettingsManager
+from Products.ZenModel.ZVersion import VERSION
 from ZenPacks.zenoss.Dashboard.Dashboard import Dashboard
 log = logging.getLogger('zen.dashboard')
 
@@ -32,7 +33,7 @@ except Exception:
 
 from Products.ZenModel.ZenPack import ZenPack as ZenPackBase
 
-DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"https://help.zenoss.com#main-content"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"%s","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
+DEFAULT_DASHBOARD_STATE = '[{"id":"col-0","items":[{"title":"Welcome to Zenoss!","refreshInterval":3000,"config":{"siteUrl":"%s"},"xtype":"sitewindowportlet","height":399,"collapsed":false},{"title":"Google Maps","refreshInterval":300,"config":{"baselocation":"%s","pollingrate":400},"xtype":"googlemapportlet","height":400,"collapsed":false}]},{"id":"col-1","items":[{"title":"Open Events","refreshInterval":300,"config":{"stateId":"ext-gen1351"},"xtype":"eventviewportlet","height":400,"collapsed":false},{"title":"Open Events Chart","refreshInterval":300,"config":{"eventClass":"/","summaryFilter":"","daysPast":3},"xtype":"openeventsportlet","height":400,"collapsed":false}]}]'
 
 class ZenPack(ZenPackBase):
     """
@@ -45,6 +46,9 @@ class ZenPack(ZenPackBase):
 
     def _buildRelationships(self, dmd):
         log.info("Building dashboard relationships on user manager")
+        siteUrl = "https://help.zenoss.com#main-content"
+        if VERSION[0] == '6':
+            siteUrl = "https://help.zenoss.com/zsd#main-content"
         # manager
         dmd.ZenUsers.buildRelations()
         # users
@@ -66,7 +70,7 @@ class ZenPack(ZenPackBase):
             dashboard = Dashboard('default')
             dashboard.columns = 2
             dashboard.owner = 'admin'
-            dashboard.state = DEFAULT_DASHBOARD_STATE % (baselocation)
+            dashboard.state = DEFAULT_DASHBOARD_STATE % (siteUrl, baselocation)
             dmd.ZenUsers.dashboards._setObject('default', dashboard)
 
     def remove(self, dmd, leaveObjects=False):
