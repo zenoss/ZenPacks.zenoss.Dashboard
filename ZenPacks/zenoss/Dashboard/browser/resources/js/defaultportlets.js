@@ -645,7 +645,7 @@
             if (Zenoss.env.ZENOSS_VERSION && Zenoss.env.ZENOSS_VERSION[0] == "6") {
                 default_sitewindow_url = "https://help.zenoss.com/zsd#main-content"
             }
-            this.siteUrl = Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || default_sitewindow_url;
+            this.siteUrl = this.siteUrl || Zenoss.Dashboard.DEFAULT_SITEWINDOW_URL || default_sitewindow_url;
             Ext.apply(this, {
                 items: [{
                     xtype: 'uxiframe',
