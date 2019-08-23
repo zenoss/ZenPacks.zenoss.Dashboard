@@ -656,7 +656,10 @@
             this.callParent(arguments);
         },
         getIFrameSource: function() {
-            var siteUrl = this.siteUrl.replace('viewGraph', 'viewGraphPortlet');
+            var siteUrl = this.siteUrl;
+            if (Zenoss.env.ZENOSS_VERSION && Zenoss.env.ZENOSS_VERSION[0] == "7") {
+                siteUrl = siteUrl.replace('viewGraph', 'viewGraphPortlet');
+            }
             return siteUrl;
         },
         getConfig: function() {
