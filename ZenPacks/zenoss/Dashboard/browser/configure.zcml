@@ -44,7 +44,7 @@
     <browser:viewlet
         name="js-dashboard-impact-portlets"
         paths="/++resource++dashboard/js/impactportlets.js"
-        zcml:condition="installed ZenPacks.zenoss.Impact"
+        zcml:condition="not-have disable-impact-zsd"
         weight="11"
         manager="Products.ZenUI3.browser.interfaces.IJavaScriptSrcManager"
         class="Products.ZenUI3.browser.javascript.JavaScriptSrcBundleViewlet"
