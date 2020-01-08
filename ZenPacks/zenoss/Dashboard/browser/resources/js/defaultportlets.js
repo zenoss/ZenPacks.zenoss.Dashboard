@@ -84,7 +84,11 @@
 
         switch (navigateTo) {
             case 'events': {
-                url = Zenoss.render.DeviceClass(uid, '')+':events_grid';
+                if (Zenoss.env.CSE_VIRTUAL_ROOT) {
+                    virtual_root = '/' + Zenoss.env.CSE_VIRTUAL_ROOT.replace(/\//g, "");
+                    uid = virtual_root + uid;
+                }
+                url = Zenoss.render.link(false, '/zport/dmd/itinfrastructure#groups:'+uid.replace(/\//g, '.')) + ':events_grid';
                 break;
             }
             case 'details': {
