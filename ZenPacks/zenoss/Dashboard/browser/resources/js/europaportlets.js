@@ -509,6 +509,14 @@
                     root: 'data',
                     fields: ['uid', 'name']
                 })
+            }, {
+                id: 'portletLimitOfDevices',
+                xtype: 'label',
+                text: '* The limit of devices on the chart is 10',
+                style: {
+                    display: 'inline-block',
+                    marginTop: '10px'
+                }
             }];
             // load the stores
             fields[0].store.load();
