@@ -1293,7 +1293,7 @@
                     eventClass: this.eventClass,
                     eventState: [Zenoss.STATUS_NEW, Zenoss.STATUS_ACKNOWLEDGED],
                     // format a time range Zep can understand
-                    lastTime: Ext.Date.format(start, Zenoss.date.ISO8601Long),
+                    lastTime: moment(start).format("x"),
                     summary: this.summaryFilter
                 }
             };
