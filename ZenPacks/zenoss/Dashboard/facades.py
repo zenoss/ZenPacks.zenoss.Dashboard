@@ -122,6 +122,8 @@ class DashboardFacade(ZuulFacade):
 
     def saveDashboardState(self, uid, state):
         dashboard = self._getObject(uid)
+        if dashboard.locked:
+            raise Exception("You cannot edit the Dashboard when it's locked")
         if dashboard.state != state:
             dashboard.state = state
 
