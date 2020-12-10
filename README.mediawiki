@@ -124,6 +124,9 @@ The following issues have been identified in the most recent release of this Zen
 
 
 == Changes ==
+;1.3.11
+* fixed Open Events Chart portle o show correct event sfor the last x days
+* fixed add check whether portlet is locked on the backend side
 ;1.0.6
 * Added Event Line Chart Portlet
 * Ability to fullscreen a portlet
