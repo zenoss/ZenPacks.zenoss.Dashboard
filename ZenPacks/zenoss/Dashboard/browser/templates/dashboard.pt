@@ -10,11 +10,15 @@
 <tal:block metal:fill-slot="script_layout">
 
   <script
-      tal:define="templateFreeUrl python:here.absolute_url_path()"
+      tal:define="
+      templateFreeUrl python:here.absolute_url_path();
+      version python:here.dmd.getZenossVersionShort();
+      product python:here.dmd.getProductName();
+      "
       tal:content="string:
 
-    Zenoss.env.ZENOSS_VERSION = '${here/dmd/getZenossVersionShort}';
-    Zenoss.env.ZENOSS_PRODUCT = '${here/dmd/productName | string:core}';
+    Zenoss.env.ZENOSS_VERSION = '${version}';
+    Zenoss.env.ZENOSS_PRODUCT = '${product}';
 
 ">s</script>
 <link rel="stylesheet" type="text/css" href="++resource++dashboard/css/portal.css">
