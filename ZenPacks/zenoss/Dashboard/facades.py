@@ -116,6 +116,10 @@ class DashboardFacade(ZuulFacade):
             # fetch the object in the new context
             d = newContext.dashboards._getOb(d.id)
 
+        # don't allow owner to be set on save.
+        if 'owner' in data:
+            del data['owner']
+
         # 3. save the rest of the data
         self.setInfo(d.getPrimaryId(), data)
         return IInfo(d)
