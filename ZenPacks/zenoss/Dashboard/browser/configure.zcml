@@ -6,19 +6,20 @@
     >
 
     <!-- API: Info Adapters -->
+    <configure zcml:condition="have enable-cz-dashboard">
+        <!-- Browser Resources -->
+        <browser:resourceDirectory
+            name="dashboard"
+            directory="resources"
+            />
 
-    <!-- Browser Resources -->
-    <browser:resourceDirectory
-        name="dashboard"
-        directory="resources"
-        />
-
-    <browser:page
-        template="templates/dashboard.pt"
-        name="Dashboard"
-        for="Products.ZenModel.interfaces.IDataRoot"
-        permission="zenoss.Common"
-        />
+        <browser:page
+            template="templates/dashboard.pt"
+            name="Dashboard"
+            for="Products.ZenModel.interfaces.IDataRoot"
+            permission="zenoss.Common"
+            />
+    </configure>
 
     <browser:viewlet
         name="js-dashboard-default-portlets"
@@ -50,7 +51,5 @@
         class="Products.ZenUI3.browser.javascript.JavaScriptSrcBundleViewlet"
         permission="zope2.Public"
         />
-
-
 
 </configure>
